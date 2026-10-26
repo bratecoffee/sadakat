@@ -6,7 +6,6 @@
   <title>Brate Coffee - Dijital Sadakat Kartı</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://unpkg.com/html5-qrcode"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -28,17 +27,17 @@
       </div>
     </div>
     <button onclick="openBaristaModal()" class="text-xs bg-white/10 hover:bg-white/20 text-amber-200 px-3 py-1.5 rounded-full border border-amber-500/30 transition">
-      <i class="fa-solid fa-desktop mr-1"></i> Kasa Ekranı
+      <i class="fa-solid fa-desktop mr-1"></i> Kasa Paneli
     </button>
   </header>
 
   <!-- Main Container -->
   <main class="w-full max-w-md flex-1 flex flex-col gap-5 my-auto">
 
-    <!-- Giriş Ekranı -->
+    <!-- Giriş Ekranı (Müşteri İçin) -->
     <div id="loginView" class="bg-stone-900/90 border border-stone-800 p-6 rounded-3xl shadow-2xl backdrop-blur-md">
       <h2 class="text-xl font-bold text-amber-400 mb-2">Hoş Geldiniz ☕</h2>
-      <p class="text-sm text-stone-400 mb-6">Kahve damgalarınızı toplamak için telefon numaranızla giriş yapın.</p>
+      <p class="text-sm text-stone-400 mb-6">Kahve damgalarınızı ve hediyelerinizi takip etmek için telefon numaranızla giriş yapın.</p>
       
       <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
@@ -50,12 +49,12 @@
           <input type="text" id="nameInput" placeholder="Örn: Ahmet Yılmaz" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500">
         </div>
         <button type="submit" id="loginBtn" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3.5 rounded-xl shadow-lg transition">
-          Kartıma Git
+          Dijital Kartımı Aç
         </button>
       </form>
     </div>
 
-    <!-- Müşteri Kartı / Panel -->
+    <!-- Müşteri Dijital Sadakat Kartı Ekranı -->
     <div id="dashboardView" class="hidden flex-col gap-5">
       
       <!-- Kart Görünümü -->
@@ -72,7 +71,7 @@
           </div>
         </div>
 
-        <!-- 8'li Izgara (2x4) -->
+        <!-- 8 Slot Grid -->
         <div class="grid grid-cols-4 gap-3 my-6" id="stampsGrid"></div>
 
         <div class="flex justify-between items-center pt-2 border-t border-white/10 text-xs text-amber-200/70">
@@ -81,35 +80,24 @@
         </div>
       </div>
 
-      <!-- Müşteri QR Tarama Butonu -->
+      <!-- Müşteri Bilgilendirme -->
       <div class="bg-stone-900 border border-stone-800 p-5 rounded-3xl text-center">
-        <p class="text-sm font-semibold text-amber-400 mb-1">Damganızı Onaylayın</p>
-        <p class="text-xs text-stone-400 mb-4">Kasa ekranında sizin için oluşturulan QR kodu telefonunuzla okutun.</p>
-
-        <button onclick="startScanner()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg">
-          <i class="fa-solid fa-qrcode text-lg"></i> Kasa Ekranındaki QR'ı Okut
-        </button>
-
-        <div id="scannerContainer" class="hidden mt-4 bg-stone-950 p-3 rounded-2xl border border-stone-800">
-          <div id="reader" class="w-full overflow-hidden rounded-xl"></div>
-          <button onclick="stopScanner()" class="mt-3 text-xs text-stone-400 hover:text-white">Kamerayı Kapat</button>
-        </div>
-
-        <p id="scanMessage" class="text-xs mt-3 min-h-[1.25rem] font-bold"></p>
+        <p class="text-sm font-semibold text-amber-400 mb-1">Nasıl Damga Kazanırım? ☕</p>
+        <p class="text-xs text-stone-400 leading-relaxed">Kasada sipariş verirken telefon numaranızı söyleyin. Kasa ekranında çıkan QR kodu telefonunuzun kamerasıyla okuttuğunuzda damganız anında kartınıza işlenir.</p>
         <button onclick="logout()" class="mt-4 text-xs text-stone-500 hover:text-stone-300 underline block mx-auto">Çıkış Yap</button>
       </div>
 
-      <!-- Hediye Kuponu Banner -->
+      <!-- Hediye Banner -->
       <div id="rewardBanner" class="hidden bg-emerald-950/80 border border-emerald-600/40 p-4 rounded-2xl text-center">
         <p class="text-emerald-300 font-bold text-sm">🎉 Tebrikler! <span id="rewardCount">1</span> Adet Ücretsiz Kahve Hakkınız Var!</p>
-        <p class="text-xs text-emerald-400/80 mt-1">Kasiyere belirterek hediye kahvenizi alabilirsiniz.</p>
+        <p class="text-xs text-emerald-400/80 mt-1">Sipariş verirken kasiyere söyleyerek hediye kahvenizi alabilirsiniz.</p>
       </div>
 
     </div>
 
   </main>
 
-  <!-- Kasiyer Paneli Modal (Kasa Bilgisayarı İçin) -->
+  <!-- Kasiyer Paneli (Kasa Bilgisayarı İçin) -->
   <div id="baristaModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-50">
     <div class="bg-stone-900 border border-stone-800 w-full max-w-md rounded-3xl p-6 relative shadow-2xl">
       <button onclick="closeBaristaModal()" class="absolute top-4 right-4 text-stone-400 hover:text-white">
@@ -118,13 +106,13 @@
 
       <!-- PIN Ekranı -->
       <div id="baristaPinStep">
-        <h3 class="text-lg font-bold text-amber-400 mb-2">Kasa / Personel Ekranı</h3>
+        <h3 class="text-lg font-bold text-amber-400 mb-2">Kasa / Personel Paneli</h3>
         <p class="text-xs text-stone-400 mb-4">Lütfen Kasiyer PIN kodunu girin:</p>
         <input type="password" id="baristaPinInput" placeholder="PIN" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white text-center tracking-widest text-lg mb-4 focus:outline-none focus:border-amber-500">
         <button onclick="verifyBaristaPin()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3 rounded-xl">Giriş Yap</button>
       </div>
 
-      <!-- Kasiyer QR Oluşturma ve Dinleme Ekranı -->
+      <!-- Kasiyer Müşteri Arama ve QR Basma Ekranı -->
       <div id="baristaActionStep" class="hidden space-y-4 text-center">
         <h3 class="text-lg font-bold text-amber-400">Müşteri İşlem Ekranı</h3>
         <p class="text-xs text-stone-400">Müşterinin söylediği telefon numarasını girin:</p>
@@ -134,24 +122,30 @@
         </div>
 
         <button onclick="generateCustomerQR()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3.5 rounded-xl text-sm shadow-lg">
-          QR Kod Oluştur ve Ekrana Bas
+          QR Kod Oluştur ve Müşteriye Göster
         </button>
 
-        <!-- Oluşan QR ve Canlı Bekleme Alanı -->
+        <!-- QR Kod Görünüm Alanı -->
         <div id="qrOutput" class="hidden flex flex-col items-center p-5 bg-white rounded-2xl mt-4 text-stone-950">
           <div id="baristaQrcode"></div>
-          <p class="text-sm font-bold mt-3">Lütfen Müşteriye Bu QR Kodu Okutun</p>
+          <p class="text-sm font-bold mt-3">Müşteri Telefon Kamerasıyla Okutmalı</p>
           <div id="statusIndicator" class="mt-2 flex items-center gap-2 text-amber-600 text-xs font-semibold">
             <i class="fa-solid fa-spinner fa-spin"></i> Müşterinin okutması bekleniyor...
           </div>
         </div>
 
-        <!-- Canlı Onaylanan Kart Önizlemesi -->
-        <div id="approvedCardPreview" class="hidden bg-emerald-950/80 border border-emerald-500/50 p-4 rounded-2xl text-left">
-          <p class="text-emerald-400 font-bold text-sm text-center mb-2">🎉 İŞLEM ONAYLANDI!</p>
-          <p id="approvedCustomerInfo" class="text-xs text-emerald-200 text-center mb-3">Müşteri 1. Damgayı Aldı.</p>
-          <button onclick="resetBaristaScreen()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs">
-            Tamamla / Sıradaki Müşteriye Geç
+        <!-- Müşteri Okuttuğunda Anında Açılan Onaylı Kart Ekranı -->
+        <div id="approvedCardPreview" class="hidden bg-emerald-950/90 border border-emerald-500/50 p-4 rounded-2xl text-left">
+          <div class="text-center mb-3">
+            <span class="text-emerald-400 font-bold text-sm bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-500/30">
+              ✓ Damga Başarıyla Alındı!
+            </span>
+            <h4 id="approvedName" class="text-white font-bold text-base mt-2">...</h4>
+            <p id="approvedStatusText" class="text-xs text-emerald-200 mt-1">Güncel Damga: 0/7</p>
+          </div>
+
+          <button onclick="resetBaristaScreen()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3 rounded-xl text-xs uppercase tracking-wider shadow-lg">
+            Sıradaki Müşteriye Geç / Ekranı Kapat
           </button>
         </div>
       </div>
@@ -162,16 +156,46 @@
   <script>
     const API_BASE_URL = "https://sadakat-api.bratecoffee35.workers.dev";
     let currentUser = null;
-    let html5QrCode = null;
     let pollInterval = null;
 
-    window.onload = () => {
-      const saved = localStorage.getItem("brate_user");
-      if (saved) {
-        currentUser = JSON.parse(saved);
-        loadCustomerData(currentUser.phone);
+    window.onload = async () => {
+      // Müşteri bir QR kod okutarak siteye geldiyse (örn: ?claim=STAMP_...)
+      const urlParams = new URLSearchParams(window.location.search);
+      const claimToken = urlParams.get('claim');
+
+      if (claimToken) {
+        await handleDirectClaim(claimToken);
+      } else {
+        const saved = localStorage.getItem("brate_user");
+        if (saved) {
+          currentUser = JSON.parse(saved);
+          loadCustomerData(currentUser.phone);
+        }
       }
     };
+
+    async function handleDirectClaim(token) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/claim-stamp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token })
+        });
+        const data = await res.json();
+
+        if (data.success || data.customer) {
+          currentUser = data.customer;
+          localStorage.setItem("brate_user", JSON.stringify(currentUser));
+          window.history.replaceState({}, document.title, window.location.pathname);
+          renderDashboard();
+          alert(data.success ? "Damganız Başarıyla Onaylandı! ☕" : data.error);
+        } else {
+          alert("Hata: " + data.error);
+        }
+      } catch (err) {
+        alert("Bağlantı hatası!");
+      }
+    }
 
     async function handleLogin(e) {
       e.preventDefault();
@@ -181,7 +205,7 @@
 
       document.getElementById("loginBtn").innerText = "Yükleniyor...";
       await loadCustomerData(phone, name);
-      document.getElementById("loginBtn").innerText = "Kartıma Git";
+      document.getElementById("loginBtn").innerText = "Dijital Kartımı Aç";
     }
 
     async function loadCustomerData(phone, name = "") {
@@ -196,12 +220,8 @@
           currentUser = data.customer;
           localStorage.setItem("brate_user", JSON.stringify(currentUser));
           renderDashboard();
-        } else {
-          alert("Hata: " + data.error);
         }
-      } catch (err) {
-        alert("Bağlantı hatası: " + err.message);
-      }
+      } catch (err) {}
     }
 
     function renderDashboard() {
@@ -212,7 +232,6 @@
       document.getElementById("cardCustomerName").innerText = currentUser.name || "Misafir Müşteri";
       document.getElementById("cardPhone").innerText = currentUser.phone;
 
-      // 8 Slot Çizimi
       const grid = document.getElementById("stampsGrid");
       grid.innerHTML = "";
       for (let i = 0; i < 8; i++) {
@@ -243,69 +262,12 @@
       }
     }
 
-    // Müşteri Kamera İşlemi
-    function startScanner() {
-      document.getElementById("scannerContainer").classList.remove("hidden");
-      document.getElementById("scanMessage").innerText = "";
-
-      html5QrCode = new Html5Qrcode("reader");
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
-        async (decodedText) => {
-          stopScanner();
-          await processClaim(decodedText);
-        },
-        (errorMessage) => {}
-      ).catch(err => {
-        document.getElementById("scanMessage").innerText = "Kamera açılamadı!";
-        document.getElementById("scanMessage").className = "text-xs mt-3 text-red-400 font-bold";
-      });
-    }
-
-    function stopScanner() {
-      if (html5QrCode) {
-        html5QrCode.stop().then(() => {
-          document.getElementById("scannerContainer").classList.add("hidden");
-        }).catch(() => {});
-      }
-    }
-
-    async function processClaim(token) {
-      const msg = document.getElementById("scanMessage");
-      msg.innerText = "İşlem yapılıyor...";
-      msg.className = "text-xs mt-3 text-amber-400 font-bold";
-
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/claim-stamp`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token })
-        });
-        const data = await res.json();
-
-        if (data.success) {
-          msg.innerText = data.message;
-          msg.className = "text-xs mt-3 text-emerald-400 font-bold";
-          currentUser = data.customer;
-          localStorage.setItem("brate_user", JSON.stringify(currentUser));
-          renderDashboard();
-        } else {
-          msg.innerText = data.error;
-          msg.className = "text-xs mt-3 text-red-400 font-bold";
-        }
-      } catch (err) {
-        msg.innerText = "Bağlantı hatası!";
-        msg.className = "text-xs mt-3 text-red-400 font-bold";
-      }
-    }
-
     function logout() {
       localStorage.removeItem("brate_user");
       location.reload();
     }
 
-    // Kasiyer Ekranı Mantığı
+    // Kasiyer Paneli Mantığı
     function openBaristaModal() {
       document.getElementById("baristaModal").classList.remove("hidden");
       document.getElementById("baristaModal").classList.add("flex");
@@ -349,15 +311,18 @@
           document.getElementById("approvedCardPreview").classList.add("hidden");
           document.getElementById("baristaQrcode").innerHTML = "";
 
+          // QR Kod Müşteriyi Doğrudan Linke Götürür
+          const directClaimUrl = `https://bratecoffee.github.io/sadakat/?claim=${data.token}`;
+
           new QRCode(document.getElementById("baristaQrcode"), {
-            text: data.token,
+            text: directClaimUrl,
             width: 180,
             height: 180,
             colorDark: "#121012",
             colorLight: "#ffffff"
           });
 
-          // Müşterinin okutmasını canlı dinlemeye başla (2 saniyede bir kontrol et)
+          // Kasa Ekranı Müşterinin Okutmasını Bekler
           if (pollInterval) clearInterval(pollInterval);
           pollInterval = setInterval(() => checkStatus(data.phone, data.token), 2000);
 
@@ -382,8 +347,8 @@
           clearInterval(pollInterval);
           document.getElementById("qrOutput").classList.add("hidden");
           document.getElementById("approvedCardPreview").classList.remove("hidden");
-          document.getElementById("approvedCustomerInfo").innerText = 
-            `${data.customer.name || 'Müşteri'} için damga onaylandı! Güncel Damga Sayısı: ${data.customer.stamps}/7`;
+          document.getElementById("approvedName").innerText = data.customer.name || "Misafir Müşteri";
+          document.getElementById("approvedStatusText").innerText = `Damga Onaylandı! Güncel Damga: ${data.customer.stamps}/7 | Hediye Kuponu: ${data.customer.rewards}`;
         }
       } catch (err) {}
     }
