@@ -34,10 +34,10 @@
   <!-- Main Container -->
   <main class="w-full max-w-md flex-1 flex flex-col gap-5 my-auto">
 
-    <!-- Giriş Ekranı (Müşteri İçin) -->
+    <!-- Giriş Ekranı -->
     <div id="loginView" class="bg-stone-900/90 border border-stone-800 p-6 rounded-3xl shadow-2xl backdrop-blur-md">
       <h2 class="text-xl font-bold text-amber-400 mb-2">Hoş Geldiniz ☕</h2>
-      <p class="text-sm text-stone-400 mb-6">Kahve damgalarınızı ve hediyelerinizi takip etmek için telefon numaranızla giriş yapın.</p>
+      <p class="text-sm text-stone-400 mb-6">Kahve damgalarınızı takip etmek için telefon numaranızla giriş yapın.</p>
       
       <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
@@ -54,10 +54,9 @@
       </form>
     </div>
 
-    <!-- Müşteri Dijital Sadakat Kartı Ekranı -->
+    <!-- Müşteri Dijital Kart Ekranı -->
     <div id="dashboardView" class="hidden flex-col gap-5">
       
-      <!-- Kart Görünümü -->
       <div class="bg-brate-card border border-amber-900/40 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
         <div class="flex justify-between items-start mb-4">
           <div>
@@ -80,10 +79,10 @@
         </div>
       </div>
 
-      <!-- Müşteri Bilgilendirme -->
+      <!-- Bilgilendirme -->
       <div class="bg-stone-900 border border-stone-800 p-5 rounded-3xl text-center">
         <p class="text-sm font-semibold text-amber-400 mb-1">Nasıl Damga Kazanırım? ☕</p>
-        <p class="text-xs text-stone-400 leading-relaxed">Kasada sipariş verirken telefon numaranızı söyleyin. Kasa ekranında çıkan QR kodu telefonunuzun kamerasıyla okuttuğunuzda damganız anında kartınıza işlenir.</p>
+        <p class="text-xs text-stone-400 leading-relaxed">Kasada telefon numaranızı söyleyin. Kasa ekranında çıkan QR kodu kendi cep telefonunuzun kamerasıyla okutun, damganız anında kartınıza işlensin!</p>
         <button onclick="logout()" class="mt-4 text-xs text-stone-500 hover:text-stone-300 underline block mx-auto">Çıkış Yap</button>
       </div>
 
@@ -97,22 +96,22 @@
 
   </main>
 
-  <!-- Kasiyer Paneli (Kasa Bilgisayarı İçin) -->
+  <!-- Kasiyer Paneli (Kasa Ekranında Açılır) -->
   <div id="baristaModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-50">
     <div class="bg-stone-900 border border-stone-800 w-full max-w-md rounded-3xl p-6 relative shadow-2xl">
       <button onclick="closeBaristaModal()" class="absolute top-4 right-4 text-stone-400 hover:text-white">
         <i class="fa-solid fa-xmark text-xl"></i>
       </button>
 
-      <!-- PIN Ekranı -->
+      <!-- PIN Girişi -->
       <div id="baristaPinStep">
-        <h3 class="text-lg font-bold text-amber-400 mb-2">Kasa / Personel Paneli</h3>
+        <h3 class="text-lg font-bold text-amber-400 mb-2">Kasa Ekranı</h3>
         <p class="text-xs text-stone-400 mb-4">Lütfen Kasiyer PIN kodunu girin:</p>
         <input type="password" id="baristaPinInput" placeholder="PIN" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white text-center tracking-widest text-lg mb-4 focus:outline-none focus:border-amber-500">
         <button onclick="verifyBaristaPin()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3 rounded-xl">Giriş Yap</button>
       </div>
 
-      <!-- Kasiyer Müşteri Arama ve QR Basma Ekranı -->
+      <!-- Kasiyer İşlem Ekranı -->
       <div id="baristaActionStep" class="hidden space-y-4 text-center">
         <h3 class="text-lg font-bold text-amber-400">Müşteri İşlem Ekranı</h3>
         <p class="text-xs text-stone-400">Müşterinin söylediği telefon numarasını girin:</p>
@@ -122,19 +121,19 @@
         </div>
 
         <button onclick="generateCustomerQR()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3.5 rounded-xl text-sm shadow-lg">
-          QR Kod Oluştur ve Müşteriye Göster
+          QR Kod Oluştur ve Ekrana Bas
         </button>
 
-        <!-- QR Kod Görünüm Alanı -->
+        <!-- QR Kod ve Canlı Bekleme -->
         <div id="qrOutput" class="hidden flex flex-col items-center p-5 bg-white rounded-2xl mt-4 text-stone-950">
           <div id="baristaQrcode"></div>
-          <p class="text-sm font-bold mt-3">Müşteri Telefon Kamerasıyla Okutmalı</p>
+          <p class="text-sm font-bold mt-3">Müşteriye Bu QR Kodu Okutun</p>
           <div id="statusIndicator" class="mt-2 flex items-center gap-2 text-amber-600 text-xs font-semibold">
             <i class="fa-solid fa-spinner fa-spin"></i> Müşterinin okutması bekleniyor...
           </div>
         </div>
 
-        <!-- Müşteri Okuttuğunda Anında Açılan Onaylı Kart Ekranı -->
+        <!-- Müşteri Okuttuğunda Açılan Onay Penceresi -->
         <div id="approvedCardPreview" class="hidden bg-emerald-950/90 border border-emerald-500/50 p-4 rounded-2xl text-left">
           <div class="text-center mb-3">
             <span class="text-emerald-400 font-bold text-sm bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-500/30">
@@ -159,7 +158,7 @@
     let pollInterval = null;
 
     window.onload = async () => {
-      // Müşteri bir QR kod okutarak siteye geldiyse (örn: ?claim=STAMP_...)
+      // Müşteri QR okutarak geldiyse
       const urlParams = new URLSearchParams(window.location.search);
       const claimToken = urlParams.get('claim');
 
@@ -183,14 +182,14 @@
         });
         const data = await res.json();
 
-        if (data.success || data.customer) {
+        if (data.customer) {
           currentUser = data.customer;
           localStorage.setItem("brate_user", JSON.stringify(currentUser));
           window.history.replaceState({}, document.title, window.location.pathname);
           renderDashboard();
-          alert(data.success ? "Damganız Başarıyla Onaylandı! ☕" : data.error);
+          alert(data.success ? (data.message || "Damganız Başarıyla Onaylandı! ☕") : data.error);
         } else {
-          alert("Hata: " + data.error);
+          alert("Hata: " + (data.error || "İşlem tamamlanamadı"));
         }
       } catch (err) {
         alert("Bağlantı hatası!");
@@ -267,7 +266,7 @@
       location.reload();
     }
 
-    // Kasiyer Paneli Mantığı
+    // Kasiyer Fonksiyonları
     function openBaristaModal() {
       document.getElementById("baristaModal").classList.remove("hidden");
       document.getElementById("baristaModal").classList.add("flex");
@@ -311,7 +310,6 @@
           document.getElementById("approvedCardPreview").classList.add("hidden");
           document.getElementById("baristaQrcode").innerHTML = "";
 
-          // QR Kod Müşteriyi Doğrudan Linke Götürür
           const directClaimUrl = `https://bratecoffee.github.io/sadakat/?claim=${data.token}`;
 
           new QRCode(document.getElementById("baristaQrcode"), {
@@ -322,7 +320,6 @@
             colorLight: "#ffffff"
           });
 
-          // Kasa Ekranı Müşterinin Okutmasını Bekler
           if (pollInterval) clearInterval(pollInterval);
           pollInterval = setInterval(() => checkStatus(data.phone, data.token), 2000);
 
@@ -348,7 +345,7 @@
           document.getElementById("qrOutput").classList.add("hidden");
           document.getElementById("approvedCardPreview").classList.remove("hidden");
           document.getElementById("approvedName").innerText = data.customer.name || "Misafir Müşteri";
-          document.getElementById("approvedStatusText").innerText = `Damga Onaylandı! Güncel Damga: ${data.customer.stamps}/7 | Hediye Kuponu: ${data.customer.rewards}`;
+          document.getElementById("approvedStatusText").innerText = `Damga Alındı! Güncel Damga: ${data.customer.stamps}/7 | Hediye Kuponu: ${data.customer.rewards}`;
         }
       } catch (err) {}
     }
