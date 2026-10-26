@@ -28,7 +28,7 @@
       </div>
     </div>
     <button onclick="openBaristaModal()" class="text-xs bg-white/10 hover:bg-white/20 text-amber-200 px-3 py-1.5 rounded-full border border-amber-500/30 transition">
-      <i class="fa-solid fa-lock mr-1"></i> Kasiyer
+      <i class="fa-solid fa-desktop mr-1"></i> Kasa Ekranı
     </button>
   </header>
 
@@ -83,11 +83,11 @@
 
       <!-- Müşteri QR Tarama Butonu -->
       <div class="bg-stone-900 border border-stone-800 p-5 rounded-3xl text-center">
-        <p class="text-sm font-semibold text-amber-400 mb-1">Damga veya Hediye Al</p>
-        <p class="text-xs text-stone-400 mb-4">Kasada kasiyerin ekranındaki QR kodu telefonunuzun kamerasıyla okutun.</p>
+        <p class="text-sm font-semibold text-amber-400 mb-1">Damganızı Onaylayın</p>
+        <p class="text-xs text-stone-400 mb-4">Kasa ekranında sizin için oluşturulan QR kodu telefonunuzla okutun.</p>
 
-        <button onclick="startScanner()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg">
-          <i class="fa-solid fa-qrcode text-lg"></i> Kasiyer QR Kodunu Tara
+        <button onclick="startScanner()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg">
+          <i class="fa-solid fa-qrcode text-lg"></i> Kasa Ekranındaki QR'ı Okut
         </button>
 
         <div id="scannerContainer" class="hidden mt-4 bg-stone-950 p-3 rounded-2xl border border-stone-800">
@@ -95,50 +95,64 @@
           <button onclick="stopScanner()" class="mt-3 text-xs text-stone-400 hover:text-white">Kamerayı Kapat</button>
         </div>
 
-        <p id="scanMessage" class="text-xs mt-3 min-h-[1.25rem] font-medium"></p>
+        <p id="scanMessage" class="text-xs mt-3 min-h-[1.25rem] font-bold"></p>
         <button onclick="logout()" class="mt-4 text-xs text-stone-500 hover:text-stone-300 underline block mx-auto">Çıkış Yap</button>
       </div>
 
       <!-- Hediye Kuponu Banner -->
       <div id="rewardBanner" class="hidden bg-emerald-950/80 border border-emerald-600/40 p-4 rounded-2xl text-center">
         <p class="text-emerald-300 font-bold text-sm">🎉 Tebrikler! <span id="rewardCount">1</span> Adet Ücretsiz Kahve Hakkınız Var!</p>
-        <p class="text-xs text-emerald-400/80 mt-1">Sipariş verirken kasiyere belirtip hediyenizi alabilirsiniz.</p>
+        <p class="text-xs text-emerald-400/80 mt-1">Kasiyere belirterek hediye kahvenizi alabilirsiniz.</p>
       </div>
 
     </div>
 
   </main>
 
-  <!-- Kasiyer Paneli Modal -->
-  <div id="baristaModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-stone-900 border border-stone-800 w-full max-w-sm rounded-3xl p-6 relative">
+  <!-- Kasiyer Paneli Modal (Kasa Bilgisayarı İçin) -->
+  <div id="baristaModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-50">
+    <div class="bg-stone-900 border border-stone-800 w-full max-w-md rounded-3xl p-6 relative shadow-2xl">
       <button onclick="closeBaristaModal()" class="absolute top-4 right-4 text-stone-400 hover:text-white">
-        <i class="fa-solid fa-xmark text-lg"></i>
+        <i class="fa-solid fa-xmark text-xl"></i>
       </button>
 
       <!-- PIN Ekranı -->
       <div id="baristaPinStep">
-        <h3 class="text-lg font-bold text-amber-400 mb-2">Kasiyer Ekranı</h3>
+        <h3 class="text-lg font-bold text-amber-400 mb-2">Kasa / Personel Ekranı</h3>
         <p class="text-xs text-stone-400 mb-4">Lütfen Kasiyer PIN kodunu girin:</p>
         <input type="password" id="baristaPinInput" placeholder="PIN" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white text-center tracking-widest text-lg mb-4 focus:outline-none focus:border-amber-500">
         <button onclick="verifyBaristaPin()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3 rounded-xl">Giriş Yap</button>
       </div>
 
-      <!-- Kasiyer QR Oluşturma Ekranı -->
+      <!-- Kasiyer QR Oluşturma ve Dinleme Ekranı -->
       <div id="baristaActionStep" class="hidden space-y-4 text-center">
-        <h3 class="text-lg font-bold text-amber-400">Tek Kullanımlık QR Oluştur</h3>
+        <h3 class="text-lg font-bold text-amber-400">Müşteri İşlem Ekranı</h3>
         <p class="text-xs text-stone-400">Müşterinin söylediği telefon numarasını girin:</p>
+        
         <div>
-          <input type="tel" id="baristaPhoneInput" placeholder="05XX XXX XX XX" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-2.5 text-white text-center text-base focus:outline-none focus:border-amber-500">
+          <input type="tel" id="baristaPhoneInput" placeholder="05XX XXX XX XX" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white text-center text-lg focus:outline-none focus:border-amber-500 font-mono">
         </div>
-        <button onclick="generateCustomerQR()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3 rounded-xl text-sm">
-          QR Kod Oluştur
+
+        <button onclick="generateCustomerQR()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3.5 rounded-xl text-sm shadow-lg">
+          QR Kod Oluştur ve Ekrana Bas
         </button>
 
-        <div id="qrOutput" class="hidden flex flex-col items-center p-4 bg-white rounded-2xl mt-3">
+        <!-- Oluşan QR ve Canlı Bekleme Alanı -->
+        <div id="qrOutput" class="hidden flex flex-col items-center p-5 bg-white rounded-2xl mt-4 text-stone-950">
           <div id="baristaQrcode"></div>
-          <p class="text-xs text-stone-900 font-bold mt-2">Müşteriye bu QR kodu okutun</p>
-          <p class="text-[10px] text-stone-500 mt-0.5">Süre: 3 Dakika | Tek Kullanımlık</p>
+          <p class="text-sm font-bold mt-3">Lütfen Müşteriye Bu QR Kodu Okutun</p>
+          <div id="statusIndicator" class="mt-2 flex items-center gap-2 text-amber-600 text-xs font-semibold">
+            <i class="fa-solid fa-spinner fa-spin"></i> Müşterinin okutması bekleniyor...
+          </div>
+        </div>
+
+        <!-- Canlı Onaylanan Kart Önizlemesi -->
+        <div id="approvedCardPreview" class="hidden bg-emerald-950/80 border border-emerald-500/50 p-4 rounded-2xl text-left">
+          <p class="text-emerald-400 font-bold text-sm text-center mb-2">🎉 İŞLEM ONAYLANDI!</p>
+          <p id="approvedCustomerInfo" class="text-xs text-emerald-200 text-center mb-3">Müşteri 1. Damgayı Aldı.</p>
+          <button onclick="resetBaristaScreen()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs">
+            Tamamla / Sıradaki Müşteriye Geç
+          </button>
         </div>
       </div>
 
@@ -149,6 +163,7 @@
     const API_BASE_URL = "https://sadakat-api.bratecoffee35.workers.dev";
     let currentUser = null;
     let html5QrCode = null;
+    let pollInterval = null;
 
     window.onload = () => {
       const saved = localStorage.getItem("brate_user");
@@ -219,7 +234,6 @@
         grid.appendChild(slot);
       }
 
-      // Hediye Kuponu Kontrolü
       const rewardBanner = document.getElementById("rewardBanner");
       if (currentUser.rewards > 0) {
         rewardBanner.classList.remove("hidden");
@@ -229,7 +243,7 @@
       }
     }
 
-    // Kamera / QR Okutma İşlemi
+    // Müşteri Kamera İşlemi
     function startScanner() {
       document.getElementById("scannerContainer").classList.remove("hidden");
       document.getElementById("scanMessage").innerText = "";
@@ -291,13 +305,14 @@
       location.reload();
     }
 
-    // Kasiyer Paneli İşlemleri
+    // Kasiyer Ekranı Mantığı
     function openBaristaModal() {
       document.getElementById("baristaModal").classList.remove("hidden");
       document.getElementById("baristaModal").classList.add("flex");
     }
 
     function closeBaristaModal() {
+      if (pollInterval) clearInterval(pollInterval);
       document.getElementById("baristaModal").classList.add("hidden");
       document.getElementById("baristaModal").classList.remove("flex");
     }
@@ -331,20 +346,52 @@
 
         if (data.success) {
           document.getElementById("qrOutput").classList.remove("hidden");
+          document.getElementById("approvedCardPreview").classList.add("hidden");
           document.getElementById("baristaQrcode").innerHTML = "";
+
           new QRCode(document.getElementById("baristaQrcode"), {
             text: data.token,
-            width: 160,
-            height: 160,
+            width: 180,
+            height: 180,
             colorDark: "#121012",
             colorLight: "#ffffff"
           });
+
+          // Müşterinin okutmasını canlı dinlemeye başla (2 saniyede bir kontrol et)
+          if (pollInterval) clearInterval(pollInterval);
+          pollInterval = setInterval(() => checkStatus(data.phone, data.token), 2000);
+
         } else {
           alert(data.error);
         }
       } catch (err) {
         alert("Hata oluştu!");
       }
+    }
+
+    async function checkStatus(phone, token) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/check-status`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone, token })
+        });
+        const data = await res.json();
+
+        if (data.success && data.approved) {
+          clearInterval(pollInterval);
+          document.getElementById("qrOutput").classList.add("hidden");
+          document.getElementById("approvedCardPreview").classList.remove("hidden");
+          document.getElementById("approvedCustomerInfo").innerText = 
+            `${data.customer.name || 'Müşteri'} için damga onaylandı! Güncel Damga Sayısı: ${data.customer.stamps}/7`;
+        }
+      } catch (err) {}
+    }
+
+    function resetBaristaScreen() {
+      document.getElementById("approvedCardPreview").classList.add("hidden");
+      document.getElementById("qrOutput").classList.add("hidden");
+      document.getElementById("baristaPhoneInput").value = "";
     }
   </script>
 </body>
