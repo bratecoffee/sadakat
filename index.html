@@ -37,7 +37,7 @@
     <!-- Giriş Ekranı -->
     <div id="loginView" class="bg-stone-900/90 border border-stone-800 p-6 rounded-3xl shadow-2xl backdrop-blur-md">
       <h2 class="text-xl font-bold text-amber-400 mb-2">Hoş Geldiniz ☕</h2>
-      <p class="text-sm text-stone-400 mb-6">Kahve damgalarınızı takip etmek için telefon numaranızla giriş yapın.</p>
+      <p class="text-sm text-stone-400 mb-6">Kahve damgalarınızı takip etmek için bilgilerinizi girin.</p>
       
       <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
@@ -46,7 +46,7 @@
         </div>
         <div>
           <label class="block text-xs font-medium text-stone-300 mb-1">Adınız Soyadınız</label>
-          <input type="text" id="nameInput" placeholder="Örn: Ahmet Yılmaz" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500">
+          <input type="text" id="nameInput" placeholder="Örn: Şener Gülseven" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500">
         </div>
         <button type="submit" id="loginBtn" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3.5 rounded-xl shadow-lg transition">
           Dijital Kartımı Aç
@@ -61,7 +61,7 @@
         <div class="flex justify-between items-start mb-4">
           <div>
             <span class="text-xs text-amber-200/60 uppercase tracking-widest font-semibold block">Müşteri Kartı</span>
-            <h3 id="cardCustomerName" class="text-xl font-bold text-white">...</h3>
+            <h3 id="cardCustomerName" class="text-xl font-bold text-white capitalize">...</h3>
           </div>
           <div>
             <span class="text-xs bg-amber-500/20 text-amber-300 px-2.5 py-1 rounded-full font-bold border border-amber-500/30">
@@ -79,10 +79,10 @@
         </div>
       </div>
 
-      <!-- Bilgilendirme -->
+      <!-- Eğlenceli Söz & Bilgilendirme Kutusu -->
       <div class="bg-stone-900 border border-stone-800 p-5 rounded-3xl text-center">
-        <p class="text-sm font-semibold text-amber-400 mb-1">Nasıl Damga Kazanırım? ☕</p>
-        <p class="text-xs text-stone-400 leading-relaxed">Kasada telefon numaranızı söyleyin. Kasa ekranında çıkan QR kodu kendi cep telefonunuzun kamerasıyla okutun, damganız anında kartınıza işlensin!</p>
+        <p id="funQuote" class="text-sm font-semibold text-amber-400 mb-2 italic">"Kahvesiz çalışan motor henüz icat edilmedi! ☕"</p>
+        <p class="text-xs text-stone-400 leading-relaxed">Kasada telefon numaranızı söyleyin, kasa ekranında çıkan QR kodu telefonunuzun fotoğraf kamerasıyla okutarak damganızı kapın!</p>
         <button onclick="logout()" class="mt-4 text-xs text-stone-500 hover:text-stone-300 underline block mx-auto">Çıkış Yap</button>
       </div>
 
@@ -96,7 +96,7 @@
 
   </main>
 
-  <!-- Kasiyer Paneli (Kasa Ekranında Açılır) -->
+  <!-- Kasiyer Paneli Modal -->
   <div id="baristaModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-50">
     <div class="bg-stone-900 border border-stone-800 w-full max-w-md rounded-3xl p-6 relative shadow-2xl">
       <button onclick="closeBaristaModal()" class="absolute top-4 right-4 text-stone-400 hover:text-white">
@@ -139,7 +139,7 @@
             <span class="text-emerald-400 font-bold text-sm bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-500/30">
               ✓ Damga Başarıyla Alındı!
             </span>
-            <h4 id="approvedName" class="text-white font-bold text-base mt-2">...</h4>
+            <h4 id="approvedName" class="text-white font-bold text-base mt-2 capitalize">...</h4>
             <p id="approvedStatusText" class="text-xs text-emerald-200 mt-1">Güncel Damga: 0/7</p>
           </div>
 
@@ -157,8 +157,16 @@
     let currentUser = null;
     let pollInterval = null;
 
+    const coffeeQuotes = [
+      "Kahvesiz çalışan motor henüz icat edilmedi! ☕",
+      "Bir damga daha yaklaştın, hediye kahve kokusu geliyor! 🌸",
+      "Pazartesi sendromunun tek ilacı bu kartta gizli! 🚀",
+      "Bugün de kahvemiz tamam, dünya düşünsün! 🔥",
+      "Sipariş hazır, kafein seviyesi %100 yükleniyor! ⚡",
+      "İyi kahve, iyi insanları bir araya getirir! ❤️"
+    ];
+
     window.onload = async () => {
-      // Müşteri QR okutarak geldiyse
       const urlParams = new URLSearchParams(window.location.search);
       const claimToken = urlParams.get('claim');
 
@@ -187,7 +195,9 @@
           localStorage.setItem("brate_user", JSON.stringify(currentUser));
           window.history.replaceState({}, document.title, window.location.pathname);
           renderDashboard();
-          alert(data.success ? (data.message || "Damganız Başarıyla Onaylandı! ☕") : data.error);
+          
+          const randomQuote = coffeeQuotes[Math.floor(Math.random() * coffeeQuotes.length)];
+          alert(`🎉 Harika, ${currentUser.name || 'Müşterimiz'}!\n\n${data.success ? 'Damganız kartınıza işlendi! ☕' : data.error}\n\n💬 "${randomQuote}"`);
         } else {
           alert("Hata: " + (data.error || "İşlem tamamlanamadı"));
         }
@@ -228,8 +238,17 @@
       document.getElementById("dashboardView").classList.remove("hidden");
       document.getElementById("dashboardView").classList.add("flex");
 
-      document.getElementById("cardCustomerName").innerText = currentUser.name || "Misafir Müşteri";
+      // Veritabanındaki Isim/Soyisim Gösterimi
+      const displayName = (currentUser.name && currentUser.name !== "Misafir Müşteri" && currentUser.name !== "Misafir") 
+        ? currentUser.name 
+        : "Kahve Sever";
+
+      document.getElementById("cardCustomerName").innerText = displayName;
       document.getElementById("cardPhone").innerText = currentUser.phone;
+
+      // Rastgele Eğlenceli Söz
+      const randomQuote = coffeeQuotes[Math.floor(Math.random() * coffeeQuotes.length)];
+      document.getElementById("funQuote").innerText = `"${randomQuote}"`;
 
       const grid = document.getElementById("stampsGrid");
       grid.innerHTML = "";
@@ -344,7 +363,7 @@
           clearInterval(pollInterval);
           document.getElementById("qrOutput").classList.add("hidden");
           document.getElementById("approvedCardPreview").classList.remove("hidden");
-          document.getElementById("approvedName").innerText = data.customer.name || "Misafir Müşteri";
+          document.getElementById("approvedName").innerText = data.customer.name || "Müşteri";
           document.getElementById("approvedStatusText").innerText = `Damga Alındı! Güncel Damga: ${data.customer.stamps}/7 | Hediye Kuponu: ${data.customer.rewards}`;
         }
       } catch (err) {}
