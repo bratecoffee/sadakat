@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Brate Coffee - Dijital Sadakat Kartı</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -27,29 +26,29 @@
       </div>
     </div>
     <button onclick="openBaristaModal()" class="text-xs bg-white/10 hover:bg-white/20 text-amber-200 px-3 py-1.5 rounded-full border border-amber-500/30 transition">
-      <i class="fa-solid fa-desktop mr-1"></i> Kasa Paneli
+      <i class="fa-solid fa-user-shield mr-1"></i> Yönetici Girişi
     </button>
   </header>
 
   <!-- Main Container -->
   <main class="w-full max-w-md flex-1 flex flex-col gap-5 my-auto">
 
-    <!-- Giriş Ekranı -->
+    <!-- Giriş / Kayıt Ol Ekranı -->
     <div id="loginView" class="bg-stone-900/90 border border-stone-800 p-6 rounded-3xl shadow-2xl backdrop-blur-md">
-      <h2 class="text-xl font-bold text-amber-400 mb-2">Hoş Geldiniz ☕</h2>
-      <p class="text-sm text-stone-400 mb-6">Kahve damgalarınızı takip etmek için bilgilerinizi girin.</p>
+      <h2 class="text-xl font-bold text-amber-400 mb-1">Hoş Geldiniz ☕</h2>
+      <p class="text-sm text-stone-400 mb-6">Kahve damgalarınızı toplamak ve hediyelerinizi görmek için giriş yapın veya kayıt olun.</p>
       
       <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-medium text-stone-300 mb-1">Telefon Numaranız</label>
-          <input type="tel" id="phoneInput" required placeholder="05XX XXX XX XX" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500">
+          <input type="tel" id="phoneInput" required placeholder="05XX XXX XX XX" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 font-mono">
         </div>
         <div>
           <label class="block text-xs font-medium text-stone-300 mb-1">Adınız Soyadınız</label>
           <input type="text" id="nameInput" placeholder="Örn: Şener Gülseven" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500">
         </div>
         <button type="submit" id="loginBtn" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3.5 rounded-xl shadow-lg transition">
-          Dijital Kartımı Aç
+          Giriş Yap / Kartımı Aç
         </button>
       </form>
     </div>
@@ -61,12 +60,7 @@
         <div class="flex justify-between items-start mb-4">
           <div>
             <span class="text-xs text-amber-200/60 uppercase tracking-widest font-semibold block">Müşteri Kartı</span>
-            <div class="flex items-center gap-2 mt-0.5">
-              <h3 id="cardCustomerName" class="text-xl font-bold text-white capitalize">...</h3>
-              <button onclick="promptChangeName()" class="text-amber-300/70 hover:text-amber-200 text-xs">
-                <i class="fa-solid fa-pen-to-square"></i>
-              </button>
-            </div>
+            <h3 id="cardCustomerName" class="text-xl font-bold text-white capitalize">...</h3>
           </div>
           <div>
             <span class="text-xs bg-amber-500/20 text-amber-300 px-2.5 py-1 rounded-full font-bold border border-amber-500/30">
@@ -84,12 +78,19 @@
         </div>
       </div>
 
-      <!-- Eğlenceli Söz & Bilgilendirme Kutusu -->
-      <div class="bg-stone-900 border border-stone-800 p-5 rounded-3xl text-center">
-        <p id="funQuote" class="text-sm font-semibold text-amber-400 mb-2 italic">"Kahvesiz çalışan motor henüz icat edilmedi! ☕"</p>
-        <p class="text-xs text-stone-400 leading-relaxed">Kasada telefon numaranızı söyleyin, kasa ekranındaki QR kodu kameranızla okutarak damganızı kapın!</p>
-        <button onclick="logout()" class="mt-4 text-xs text-stone-500 hover:text-stone-300 underline block mx-auto">Çıkış Yap</button>
+      <!-- 30 Saniyelik Dinamik Onay Kodu Ekranı -->
+      <div class="bg-stone-900 border border-stone-800 p-6 rounded-3xl text-center shadow-xl">
+        <p class="text-xs text-stone-400 mb-1">Kasada Baristaya Söyleyeceğiniz Kod:</p>
+        <div class="bg-stone-950 border border-amber-500/30 rounded-2xl py-3 my-2 flex items-center justify-center gap-2">
+          <span id="dynamicCode" class="text-3xl font-extrabold tracking-[0.3em] text-amber-400 font-mono">------</span>
+        </div>
+        <div class="flex items-center justify-between text-[11px] text-stone-500 px-2 mt-2">
+          <span>Kod Yenileniyor:</span>
+          <span id="codeTimer" class="font-bold text-amber-500 font-mono">30s</span>
+        </div>
       </div>
+
+      <button onclick="logout()" class="text-xs text-stone-500 hover:text-stone-300 underline block mx-auto">Çıkış Yap</button>
 
       <!-- Hediye Banner -->
       <div id="rewardBanner" class="hidden bg-emerald-950/80 border border-emerald-600/40 p-4 rounded-2xl text-center">
@@ -101,7 +102,7 @@
 
   </main>
 
-  <!-- Kasiyer Paneli Modal -->
+  <!-- Kasiyer / Yönetici Paneli Modal -->
   <div id="baristaModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-50">
     <div class="bg-stone-900 border border-stone-800 w-full max-w-md rounded-3xl p-6 relative shadow-2xl">
       <button onclick="closeBaristaModal()" class="absolute top-4 right-4 text-stone-400 hover:text-white">
@@ -110,47 +111,36 @@
 
       <!-- PIN Girişi -->
       <div id="baristaPinStep">
-        <h3 class="text-lg font-bold text-amber-400 mb-2">Kasa Ekranı</h3>
+        <h3 class="text-lg font-bold text-amber-400 mb-2">Kasa Yönetici Paneli</h3>
         <p class="text-xs text-stone-400 mb-4">Lütfen Kasiyer PIN kodunu girin:</p>
         <input type="password" id="baristaPinInput" placeholder="PIN" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white text-center tracking-widest text-lg mb-4 focus:outline-none focus:border-amber-500">
         <button onclick="verifyBaristaPin()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3 rounded-xl">Giriş Yap</button>
       </div>
 
-      <!-- Kasiyer İşlem Ekranı -->
-      <div id="baristaActionStep" class="hidden space-y-4 text-center">
-        <h3 class="text-lg font-bold text-amber-400">Müşteri İşlem Ekranı</h3>
-        <p class="text-xs text-stone-400">Müşterinin söylediği telefon numarasını girin:</p>
+      <!-- Kasiyer Kod Onaylama Ekranı -->
+      <div id="baristaActionStep" class="hidden space-y-4">
+        <h3 class="text-lg font-bold text-amber-400 text-center">Kasa Damga Onayı</h3>
         
         <div>
+          <label class="block text-xs text-stone-400 mb-1">Müşteri Telefon Numarası</label>
           <input type="tel" id="baristaPhoneInput" placeholder="05XX XXX XX XX" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white text-center text-lg focus:outline-none focus:border-amber-500 font-mono">
         </div>
 
-        <button onclick="generateCustomerQR()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3.5 rounded-xl text-sm shadow-lg">
-          QR Kod Oluştur ve Ekrana Bas
-        </button>
-
-        <!-- QR Kod ve Canlı Bekleme -->
-        <div id="qrOutput" class="hidden flex flex-col items-center p-5 bg-white rounded-2xl mt-4 text-stone-950">
-          <div id="baristaQrcode"></div>
-          <p class="text-sm font-bold mt-3">Müşteriye Bu QR Kodu Okutun</p>
-          <div id="statusIndicator" class="mt-2 flex items-center gap-2 text-amber-600 text-xs font-semibold">
-            <i class="fa-solid fa-spinner fa-spin"></i> Müşterinin okutması bekleniyor...
-          </div>
+        <div>
+          <label class="block text-xs text-stone-400 mb-1">Müşterinin Söylediği 6 Haneli Kod</label>
+          <input type="text" id="baristaCodeInput" maxlength="6" placeholder="123456" class="w-full bg-stone-950 border border-amber-500/40 rounded-xl px-4 py-3 text-amber-400 text-center text-2xl font-extrabold tracking-widest focus:outline-none focus:border-amber-500 font-mono">
         </div>
 
-        <!-- Müşteri Okuttuğunda Açılan Onay Penceresi -->
-        <div id="approvedCardPreview" class="hidden bg-emerald-950/90 border border-emerald-500/50 p-4 rounded-2xl text-left">
-          <div class="text-center mb-3">
-            <span class="text-emerald-400 font-bold text-sm bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-500/30">
-              ✓ Damga Başarıyla Alındı!
-            </span>
-            <h4 id="approvedName" class="text-white font-bold text-base mt-2 capitalize">...</h4>
-            <p id="approvedStatusText" class="text-xs text-emerald-200 mt-1">Güncel Damga: 0/7</p>
-          </div>
+        <button onclick="submitVerifyCode()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3.5 rounded-xl text-sm shadow-lg">
+          Kodu Onayla ve Damgayı Bas ☕
+        </button>
 
-          <button onclick="resetBaristaScreen()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3 rounded-xl text-xs uppercase tracking-wider shadow-lg">
-            Sıradaki Müşteriye Geç / Ekranı Kapat
-          </button>
+        <p id="baristaStatus" class="text-xs text-center min-h-[1.25rem] font-bold"></p>
+
+        <!-- Onaylanan Müşteri Kart Bilgisi -->
+        <div id="approvedInfo" class="hidden bg-emerald-950/80 border border-emerald-500/40 p-4 rounded-2xl text-center">
+          <p id="approvedCustomerName" class="text-white font-bold text-sm">...</p>
+          <p id="approvedCustomerStatus" class="text-xs text-emerald-300 mt-1">...</p>
         </div>
       </div>
 
@@ -160,70 +150,16 @@
   <script>
     const API_BASE_URL = "https://sadakat-api.bratecoffee35.workers.dev";
     let currentUser = null;
-    let pollInterval = null;
+    let timerInterval = null;
+    let currentCode = "";
 
-    const coffeeQuotes = [
-      "Kahvesiz çalışan motor henüz icat edilmedi! ☕",
-      "Bir damga daha yaklaştın, hediye kahve kokusu geliyor! 🌸",
-      "Pazartesi sendromunun tek ilacı bu kartta gizli! 🚀",
-      "Bugün de kahvemiz tamam, dünya düşünsün! 🔥",
-      "Sipariş hazır, kafein seviyesi %100 yükleniyor! ⚡",
-      "İyi kahve, iyi insanları bir araya getirir! ❤️"
-    ];
-
-    window.onload = async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const claimToken = urlParams.get('claim');
-
-      if (claimToken) {
-        await handleDirectClaim(claimToken);
-      } else {
-        const saved = localStorage.getItem("brate_user");
-        if (saved) {
-          currentUser = JSON.parse(saved);
-          loadCustomerData(currentUser.phone);
-        }
+    window.onload = () => {
+      const saved = localStorage.getItem("brate_user");
+      if (saved) {
+        currentUser = JSON.parse(saved);
+        loadCustomerData(currentUser.phone);
       }
     };
-
-    async function handleDirectClaim(token) {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/claim-stamp`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token })
-        });
-        const data = await res.json();
-
-        if (data.customer) {
-          currentUser = data.customer;
-          localStorage.setItem("brate_user", JSON.stringify(currentUser));
-          window.history.replaceState({}, document.title, window.location.pathname);
-          renderDashboard();
-
-          // İsim Kontrolü: Eğer veritabanında isim "Misafir" veya boşsa müşteriden isim iste
-          if (!currentUser.name || currentUser.name.includes("Misafir")) {
-            setTimeout(promptChangeName, 800);
-          } else {
-            const randomQuote = coffeeQuotes[Math.floor(Math.random() * coffeeQuotes.length)];
-            alert(`🎉 Harika, ${currentUser.name}!\n\n${data.success ? 'Damganız kartınıza işlendi! ☕' : data.error}\n\n💬 "${randomQuote}"`);
-          }
-        } else {
-          alert("Hata: " + (data.error || "İşlem tamamlanamadı"));
-        }
-      } catch (err) {
-        alert("Bağlantı hatası!");
-      }
-    }
-
-    async function promptChangeName() {
-      const currentName = (currentUser && currentUser.name && !currentUser.name.includes("Misafir")) ? currentUser.name : "";
-      const newName = prompt("Kartınızda görünecek Adınızı ve Soyadınızı girin:", currentName);
-
-      if (newName && newName.trim() !== "") {
-        await loadCustomerData(currentUser.phone, newName.trim());
-      }
-    }
 
     async function handleLogin(e) {
       e.preventDefault();
@@ -233,7 +169,7 @@
 
       document.getElementById("loginBtn").innerText = "Yükleniyor...";
       await loadCustomerData(phone, name);
-      document.getElementById("loginBtn").innerText = "Dijital Kartımı Aç";
+      document.getElementById("loginBtn").innerText = "Giriş Yap / Kartımı Aç";
     }
 
     async function loadCustomerData(phone, name = "") {
@@ -257,16 +193,10 @@
       document.getElementById("dashboardView").classList.remove("hidden");
       document.getElementById("dashboardView").classList.add("flex");
 
-      const displayName = (currentUser.name && !currentUser.name.includes("Misafir")) 
-        ? currentUser.name 
-        : "Adınızı Ekleyin ✏️";
-
-      document.getElementById("cardCustomerName").innerText = displayName;
+      document.getElementById("cardCustomerName").innerText = currentUser.name || "Kahve Sever";
       document.getElementById("cardPhone").innerText = currentUser.phone;
 
-      const randomQuote = coffeeQuotes[Math.floor(Math.random() * coffeeQuotes.length)];
-      document.getElementById("funQuote").innerText = `"${randomQuote}"`;
-
+      // 8 Slot Grid
       const grid = document.getElementById("stampsGrid");
       grid.innerHTML = "";
       for (let i = 0; i < 8; i++) {
@@ -295,9 +225,44 @@
       } else {
         rewardBanner.classList.add("hidden");
       }
+
+      startCodeTimer();
+    }
+
+    // 30 Saniyelik Dinamik Kod Zamanlayıcısı
+    function startCodeTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+
+      function generateNewCode() {
+        // Telefon ve zamana dayalı 6 haneli dinamik kod
+        const now = Math.floor(Date.now() / 30000); // 30 sn blok
+        let hash = 0;
+        const str = currentUser.phone + "_" + now;
+        for (let i = 0; i < str.length; i++) {
+          hash = (hash << 5) - hash + str.charCodeAt(i);
+          hash |= 0;
+        }
+        currentCode = Math.abs(hash % 900000 + 100000).toString();
+        document.getElementById("dynamicCode").innerText = currentCode;
+      }
+
+      generateNewCode();
+
+      let timeLeft = 30 - (Math.floor(Date.now() / 1000) % 30);
+      document.getElementById("codeTimer").innerText = timeLeft + "s";
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        if (timeLeft <= 0) {
+          generateNewCode();
+          timeLeft = 30;
+        }
+        document.getElementById("codeTimer").innerText = timeLeft + "s";
+      }, 1000);
     }
 
     function logout() {
+      if (timerInterval) clearInterval(timerInterval);
       localStorage.removeItem("brate_user");
       location.reload();
     }
@@ -309,7 +274,6 @@
     }
 
     function closeBaristaModal() {
-      if (pollInterval) clearInterval(pollInterval);
       document.getElementById("baristaModal").classList.add("hidden");
       document.getElementById("baristaModal").classList.remove("flex");
     }
@@ -324,72 +288,56 @@
       }
     }
 
-    async function generateCustomerQR() {
+    async function submitVerifyCode() {
       const phone = document.getElementById("baristaPhoneInput").value.trim();
+      const code = document.getElementById("baristaCodeInput").value.trim();
       const pin = document.getElementById("baristaPinInput").value;
+      const status = document.getElementById("baristaStatus");
+      const approvedInfo = document.getElementById("approvedInfo");
 
-      if (!phone) {
-        alert("Lütfen müşteri telefonunu girin!");
+      if (!phone || !code) {
+        status.innerText = "Lütfen Telefon ve 6 Haneli Kodu Girin!";
+        status.className = "text-xs text-center text-red-400 font-bold";
         return;
       }
 
+      status.innerText = "Doğrulanıyor...";
+      status.className = "text-xs text-center text-amber-400 font-bold";
+
       try {
-        const res = await fetch(`${API_BASE_URL}/api/generate-token`, {
+        const res = await fetch(`${API_BASE_URL}/api/verify-code`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone, pin })
+          body: JSON.stringify({ phone, code, pin })
         });
         const data = await res.json();
 
         if (data.success) {
-          document.getElementById("qrOutput").classList.remove("hidden");
-          document.getElementById("approvedCardPreview").classList.add("hidden");
-          document.getElementById("baristaQrcode").innerHTML = "";
+          status.innerText = "İşlem Başarılı! 🎉";
+          status.className = "text-xs text-center text-emerald-400 font-bold";
 
-          const directClaimUrl = `https://bratecoffee.github.io/sadakat/?claim=${data.token}`;
+          approvedInfo.classList.remove("hidden");
+          document.getElementById("approvedCustomerName").innerText = data.customer.name || "Müşteri";
+          document.getElementById("approvedCustomerStatus").innerText = `${data.message} | Güncel Damga: ${data.customer.stamps}/7`;
 
-          new QRCode(document.getElementById("baristaQrcode"), {
-            text: directClaimUrl,
-            width: 180,
-            height: 180,
-            colorDark: "#121012",
-            colorLight: "#ffffff"
-          });
+          // Temizleme
+          document.getElementById("baristaCodeInput").value = "";
 
-          if (pollInterval) clearInterval(pollInterval);
-          pollInterval = setInterval(() => checkStatus(data.phone, data.token), 2000);
-
+          // Eğer açık olan kart bu müşterininki ise güncelle
+          if (currentUser && currentUser.phone === phone) {
+            currentUser = data.customer;
+            localStorage.setItem("brate_user", JSON.stringify(currentUser));
+            renderDashboard();
+          }
         } else {
-          alert(data.error);
+          status.innerText = data.error;
+          status.className = "text-xs text-center text-red-400 font-bold";
+          approvedInfo.classList.add("hidden");
         }
       } catch (err) {
-        alert("Hata oluştu!");
+        status.innerText = "Bağlantı Hatası!";
+        status.className = "text-xs text-center text-red-400 font-bold";
       }
-    }
-
-    async function checkStatus(phone, token) {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/check-status`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone, token })
-        });
-        const data = await res.json();
-
-        if (data.success && data.approved) {
-          clearInterval(pollInterval);
-          document.getElementById("qrOutput").classList.add("hidden");
-          document.getElementById("approvedCardPreview").classList.remove("hidden");
-          document.getElementById("approvedName").innerText = data.customer.name || "Müşteri";
-          document.getElementById("approvedStatusText").innerText = `Damga Alındı! Güncel Damga: ${data.customer.stamps}/7 | Hediye Kuponu: ${data.customer.rewards}`;
-        }
-      } catch (err) {}
-    }
-
-    function resetBaristaScreen() {
-      document.getElementById("approvedCardPreview").classList.add("hidden");
-      document.getElementById("qrOutput").classList.add("hidden");
-      document.getElementById("baristaPhoneInput").value = "";
     }
   </script>
 </body>
