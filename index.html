@@ -36,7 +36,6 @@
     <!-- Giriş / Kayıt Ekranı -->
     <div id="loginView" class="bg-stone-900/90 border border-stone-800 p-6 rounded-3xl shadow-2xl backdrop-blur-md">
       
-      <!-- Sekme Butonları (Giriş Yap / Kayıt Ol) -->
       <div class="flex bg-stone-950 p-1 rounded-2xl mb-6 border border-stone-800">
         <button id="tabLogin" onclick="switchTab('login')" class="flex-1 py-2.5 text-xs font-bold rounded-xl bg-amber-600 text-stone-950 shadow transition">
           Giriş Yap
@@ -133,7 +132,6 @@
       <!-- Kasiyer Kod Onaylama & Müşteri Listesi Ekranı -->
       <div id="baristaActionStep" class="hidden space-y-4">
         
-        <!-- Sekme Değiştirici -->
         <div class="flex bg-stone-950 p-1 rounded-2xl border border-stone-800">
           <button id="adminTabApprove" onclick="switchAdminTab('approve')" class="flex-1 py-2 text-xs font-bold rounded-xl bg-amber-600 text-stone-950">
             Damga Onayla
@@ -167,12 +165,10 @@
           </div>
         </div>
 
-        <!-- 2. Müşteri Listesi ve Sınır Ayarları Bölümü -->
+        <!-- 2. Müşteri Listesi -->
         <div id="adminSectionList" class="hidden space-y-3">
           <p class="text-xs text-stone-400 text-center">Üye müşteri listesi ve günlük damga izinleri:</p>
-          <div id="customerListContainer" class="max-h-60 overflow-y-auto space-y-2 pr-1">
-            <!-- Dinamik müşteri listesi buraya yüklenecek -->
-          </div>
+          <div id="customerListContainer" class="max-h-60 overflow-y-auto space-y-2 pr-1"></div>
         </div>
 
       </div>
@@ -260,7 +256,6 @@
       document.getElementById("cardCustomerName").innerText = currentUser.name || "Kahve Sever";
       document.getElementById("cardPhone").innerText = currentUser.phone;
 
-      // 8 Slot Grid
       const grid = document.getElementById("stampsGrid");
       grid.innerHTML = "";
       for (let i = 0; i < 8; i++) {
@@ -441,8 +436,8 @@
       const status = document.getElementById("baristaStatus");
       const approvedInfo = document.getElementById("approvedInfo");
 
-      if (!phone || !code) {
-        status.innerText = "Lütfen Telefon ve 6 Haneli Kodu Girin!";
+      if (!phone || !code || code.length !== 6) {
+        status.innerText = "Lütfen Telefon ve 6 Haneli Kodu Eksiksiz Girin!";
         status.className = "text-xs text-center text-red-400 font-bold";
         return;
       }
