@@ -272,21 +272,29 @@
       startCodeTimer();
     }
 
-    // Gerçek Rastgele (Hash Tabanlı) 30 Saniyelik OTP Üretici
+    // Rastgele ve Tahmin Edilemez 30 Saniyelik OTP Üretici
     function startCodeTimer() {
       if (timerInterval) clearInterval(timerInterval);
 
       function generateRandomOTP() {
-        const timeBlock = Math.floor(Date.now() / 30000); // 30 sn blok
-        let seed = 0;
-        const secret = currentUser.phone + "_BRATE_COFFEE_SALT_" + timeBlock;
+        const timeBlock = Math.floor(Date.now() / 30000);
+        
+        let h1 = 0x811c9dc5;
+        let h2 = 0x01000193;
+        const str = currentUser.phone + "_BRATE_SALT_" + timeBlock;
 
-        for (let i = 0; i < secret.length; i++) {
-          seed = (seed * 31 + secret.charCodeAt(i)) % 2147483647;
+        for (let i = 0; i < str.length; i++) {
+          const char = str.charCodeAt(i);
+          h1 = Math.imul(h1 ^ char, 16777619);
+          h2 = Math.imul(h2 ^ char, 2246822519);
         }
 
-        // 100000 ile 999999 arasında tamamen rastgele 6 haneli kod
-        const otp = Math.floor(100000 + (seed % 900000));
+        let hash = (h1 ^ h2) >>> 0;
+        hash = Math.imul(hash ^ (hash >>> 16), 2246822519);
+        hash = Math.imul(hash ^ (hash >>> 13), 3266489917);
+        hash = (hash ^ (hash >>> 16)) >>> 0;
+
+        const otp = (hash % 900000) + 100000;
         document.getElementById("dynamicCode").innerText = otp;
       }
 
