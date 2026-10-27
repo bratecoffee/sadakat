@@ -116,8 +116,8 @@
   </main>
 
   <!-- Kasiyer / Yönetici Paneli Modal -->
-  <div id="baristaModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-50">
-    <div class="bg-stone-900 border border-stone-800 w-full max-w-md rounded-3xl p-6 relative shadow-2xl">
+  <div id="baristaModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-50 overflow-y-auto">
+    <div class="bg-stone-900 border border-stone-800 w-full max-w-md rounded-3xl p-6 relative shadow-2xl my-auto">
       <button onclick="closeBaristaModal()" class="absolute top-4 right-4 text-stone-400 hover:text-white">
         <i class="fa-solid fa-xmark text-xl"></i>
       </button>
@@ -130,31 +130,51 @@
         <button onclick="verifyBaristaPin()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3 rounded-xl">Giriş Yap</button>
       </div>
 
-      <!-- Kasiyer Kod Onaylama Ekranı -->
+      <!-- Kasiyer Kod Onaylama & Müşteri Listesi Ekranı -->
       <div id="baristaActionStep" class="hidden space-y-4">
-        <h3 class="text-lg font-bold text-amber-400 text-center">Kasa Damga Onayı</h3>
         
-        <div>
-          <label class="block text-xs text-stone-400 mb-1">Müşteri Telefon Numarası</label>
-          <input type="tel" id="baristaPhoneInput" placeholder="05XX XXX XX XX" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white text-center text-lg focus:outline-none focus:border-amber-500 font-mono">
+        <!-- Sekme Değiştirici -->
+        <div class="flex bg-stone-950 p-1 rounded-2xl border border-stone-800">
+          <button id="adminTabApprove" onclick="switchAdminTab('approve')" class="flex-1 py-2 text-xs font-bold rounded-xl bg-amber-600 text-stone-950">
+            Damga Onayla
+          </button>
+          <button id="adminTabList" onclick="switchAdminTab('list')" class="flex-1 py-2 text-xs font-bold rounded-xl text-stone-400 hover:text-white">
+            Müşteri Listesi
+          </button>
         </div>
 
-        <div>
-          <label class="block text-xs text-stone-400 mb-1">Müşterinin Söylediği 6 Haneli Kod</label>
-          <input type="text" id="baristaCodeInput" maxlength="6" placeholder="123456" class="w-full bg-stone-950 border border-amber-500/40 rounded-xl px-4 py-3 text-amber-400 text-center text-2xl font-extrabold tracking-widest focus:outline-none focus:border-amber-500 font-mono">
+        <!-- 1. Damga Onay Bölümü -->
+        <div id="adminSectionApprove" class="space-y-4">
+          <div>
+            <label class="block text-xs text-stone-400 mb-1">Müşteri Telefon Numarası</label>
+            <input type="tel" id="baristaPhoneInput" placeholder="05XX XXX XX XX" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white text-center text-lg focus:outline-none focus:border-amber-500 font-mono">
+          </div>
+
+          <div>
+            <label class="block text-xs text-stone-400 mb-1">Müşterinin Söylediği 6 Haneli Kod</label>
+            <input type="text" id="baristaCodeInput" maxlength="6" placeholder="123456" class="w-full bg-stone-950 border border-amber-500/40 rounded-xl px-4 py-3 text-amber-400 text-center text-2xl font-extrabold tracking-widest focus:outline-none focus:border-amber-500 font-mono">
+          </div>
+
+          <button onclick="submitVerifyCode()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3.5 rounded-xl text-sm shadow-lg">
+            Kodu Onayla ve Damgayı Bas ☕
+          </button>
+
+          <p id="baristaStatus" class="text-xs text-center min-h-[1.25rem] font-bold"></p>
+
+          <div id="approvedInfo" class="hidden bg-emerald-950/80 border border-emerald-500/40 p-4 rounded-2xl text-center">
+            <p id="approvedCustomerName" class="text-white font-bold text-sm">...</p>
+            <p id="approvedCustomerStatus" class="text-xs text-emerald-300 mt-1">...</p>
+          </div>
         </div>
 
-        <button onclick="submitVerifyCode()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3.5 rounded-xl text-sm shadow-lg">
-          Kodu Onayla ve Damgayı Bas ☕
-        </button>
-
-        <p id="baristaStatus" class="text-xs text-center min-h-[1.25rem] font-bold"></p>
-
-        <!-- Onaylanan Müşteri Bilgisi -->
-        <div id="approvedInfo" class="hidden bg-emerald-950/80 border border-emerald-500/40 p-4 rounded-2xl text-center">
-          <p id="approvedCustomerName" class="text-white font-bold text-sm">...</p>
-          <p id="approvedCustomerStatus" class="text-xs text-emerald-300 mt-1">...</p>
+        <!-- 2. Müşteri Listesi ve Sınır Ayarları Bölümü -->
+        <div id="adminSectionList" class="hidden space-y-3">
+          <p class="text-xs text-stone-400 text-center">Üye müşteri listesi ve günlük damga izinleri:</p>
+          <div id="customerListContainer" class="max-h-60 overflow-y-auto space-y-2 pr-1">
+            <!-- Dinamik müşteri listesi buraya yüklenecek -->
+          </div>
         </div>
+
       </div>
 
     </div>
@@ -165,6 +185,7 @@
     let currentUser = null;
     let timerInterval = null;
     let activeTab = "login";
+    let baristaPin = "";
 
     window.onload = () => {
       const saved = localStorage.getItem("brate_user");
@@ -272,13 +293,12 @@
       startCodeTimer();
     }
 
-    // Rastgele ve Tahmin Edilemez 30 Saniyelik OTP Üretici
+    // Rastgele OTP Üretici
     function startCodeTimer() {
       if (timerInterval) clearInterval(timerInterval);
 
       function generateRandomOTP() {
         const timeBlock = Math.floor(Date.now() / 30000);
-        
         let h1 = 0x811c9dc5;
         let h2 = 0x01000193;
         const str = currentUser.phone + "_BRATE_SALT_" + timeBlock;
@@ -319,7 +339,7 @@
       location.reload();
     }
 
-    // Kasiyer Paneli
+    // Kasiyer Paneli Fonksiyonları
     function openBaristaModal() {
       document.getElementById("baristaModal").classList.remove("hidden");
       document.getElementById("baristaModal").classList.add("flex");
@@ -333,6 +353,7 @@
     function verifyBaristaPin() {
       const pin = document.getElementById("baristaPinInput").value;
       if (pin === "1923") {
+        baristaPin = pin;
         document.getElementById("baristaPinStep").classList.add("hidden");
         document.getElementById("baristaActionStep").classList.remove("hidden");
       } else {
@@ -340,10 +361,83 @@
       }
     }
 
+    function switchAdminTab(tab) {
+      const btnApprove = document.getElementById("adminTabApprove");
+      const btnList = document.getElementById("adminTabList");
+      const secApprove = document.getElementById("adminSectionApprove");
+      const secList = document.getElementById("adminSectionList");
+
+      if (tab === 'approve') {
+        btnApprove.className = "flex-1 py-2 text-xs font-bold rounded-xl bg-amber-600 text-stone-950";
+        btnList.className = "flex-1 py-2 text-xs font-bold rounded-xl text-stone-400 hover:text-white";
+        secApprove.classList.remove("hidden");
+        secList.classList.add("hidden");
+      } else {
+        btnList.className = "flex-1 py-2 text-xs font-bold rounded-xl bg-amber-600 text-stone-950";
+        btnApprove.className = "flex-1 py-2 text-xs font-bold rounded-xl text-stone-400 hover:text-white";
+        secList.classList.remove("hidden");
+        secApprove.classList.add("hidden");
+        loadCustomerList();
+      }
+    }
+
+    async function loadCustomerList() {
+      const container = document.getElementById("customerListContainer");
+      container.innerHTML = "<p class='text-xs text-stone-500 text-center py-4'>Yükleniyor...</p>";
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/customers`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pin: baristaPin })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          container.innerHTML = "";
+          data.customers.forEach(c => {
+            const item = document.createElement("div");
+            item.className = "bg-stone-950 border border-stone-800 p-3 rounded-2xl flex justify-between items-center";
+            item.innerHTML = `
+              <div>
+                <p class="text-xs font-bold text-white capitalize">${c.name || 'Müşteri'}</p>
+                <p class="text-[10px] text-stone-400 font-mono">${c.phone} | Damga: ${c.stamps}/7</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] ${c.allow_multiple ? 'text-amber-400 font-bold' : 'text-stone-500'}">
+                  ${c.allow_multiple ? 'Çoklu Damga' : 'Tek Damga'}
+                </span>
+                <button onclick="toggleCustomerLimit('${c.phone}', ${c.allow_multiple ? 0 : 1})" class="text-xs px-2.5 py-1 rounded-lg border ${c.allow_multiple ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-stone-800 text-stone-400 border-stone-700'}">
+                  ${c.allow_multiple ? 'Sınırı Aç' : 'Sınırsız Yap'}
+                </button>
+              </div>
+            `;
+            container.appendChild(item);
+          });
+        }
+      } catch (err) {
+        container.innerHTML = "<p class='text-xs text-red-400 text-center py-4'>Liste yüklenemedi!</p>";
+      }
+    }
+
+    async function toggleCustomerLimit(phone, allow_multiple) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/toggle-limit`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone, allow_multiple, pin: baristaPin })
+        });
+        const data = await res.json();
+        if (data.success) {
+          loadCustomerList();
+        }
+      } catch (err) {}
+    }
+
     async function submitVerifyCode() {
       const phone = document.getElementById("baristaPhoneInput").value.trim();
       const code = document.getElementById("baristaCodeInput").value.trim();
-      const pin = document.getElementById("baristaPinInput").value;
+      const pin = baristaPin;
       const status = document.getElementById("baristaStatus");
       const approvedInfo = document.getElementById("approvedInfo");
 
