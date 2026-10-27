@@ -61,7 +61,12 @@
         <div class="flex justify-between items-start mb-4">
           <div>
             <span class="text-xs text-amber-200/60 uppercase tracking-widest font-semibold block">Müşteri Kartı</span>
-            <h3 id="cardCustomerName" class="text-xl font-bold text-white capitalize">...</h3>
+            <div class="flex items-center gap-2 mt-0.5">
+              <h3 id="cardCustomerName" class="text-xl font-bold text-white capitalize">...</h3>
+              <button onclick="promptChangeName()" class="text-amber-300/70 hover:text-amber-200 text-xs">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+            </div>
           </div>
           <div>
             <span class="text-xs bg-amber-500/20 text-amber-300 px-2.5 py-1 rounded-full font-bold border border-amber-500/30">
@@ -82,7 +87,7 @@
       <!-- Eğlenceli Söz & Bilgilendirme Kutusu -->
       <div class="bg-stone-900 border border-stone-800 p-5 rounded-3xl text-center">
         <p id="funQuote" class="text-sm font-semibold text-amber-400 mb-2 italic">"Kahvesiz çalışan motor henüz icat edilmedi! ☕"</p>
-        <p class="text-xs text-stone-400 leading-relaxed">Kasada telefon numaranızı söyleyin, kasa ekranında çıkan QR kodu telefonunuzun fotoğraf kamerasıyla okutarak damganızı kapın!</p>
+        <p class="text-xs text-stone-400 leading-relaxed">Kasada telefon numaranızı söyleyin, kasa ekranındaki QR kodu kameranızla okutarak damganızı kapın!</p>
         <button onclick="logout()" class="mt-4 text-xs text-stone-500 hover:text-stone-300 underline block mx-auto">Çıkış Yap</button>
       </div>
 
@@ -195,14 +200,28 @@
           localStorage.setItem("brate_user", JSON.stringify(currentUser));
           window.history.replaceState({}, document.title, window.location.pathname);
           renderDashboard();
-          
-          const randomQuote = coffeeQuotes[Math.floor(Math.random() * coffeeQuotes.length)];
-          alert(`🎉 Harika, ${currentUser.name || 'Müşterimiz'}!\n\n${data.success ? 'Damganız kartınıza işlendi! ☕' : data.error}\n\n💬 "${randomQuote}"`);
+
+          // İsim Kontrolü: Eğer veritabanında isim "Misafir" veya boşsa müşteriden isim iste
+          if (!currentUser.name || currentUser.name.includes("Misafir")) {
+            setTimeout(promptChangeName, 800);
+          } else {
+            const randomQuote = coffeeQuotes[Math.floor(Math.random() * coffeeQuotes.length)];
+            alert(`🎉 Harika, ${currentUser.name}!\n\n${data.success ? 'Damganız kartınıza işlendi! ☕' : data.error}\n\n💬 "${randomQuote}"`);
+          }
         } else {
           alert("Hata: " + (data.error || "İşlem tamamlanamadı"));
         }
       } catch (err) {
         alert("Bağlantı hatası!");
+      }
+    }
+
+    async function promptChangeName() {
+      const currentName = (currentUser && currentUser.name && !currentUser.name.includes("Misafir")) ? currentUser.name : "";
+      const newName = prompt("Kartınızda görünecek Adınızı ve Soyadınızı girin:", currentName);
+
+      if (newName && newName.trim() !== "") {
+        await loadCustomerData(currentUser.phone, newName.trim());
       }
     }
 
@@ -238,15 +257,13 @@
       document.getElementById("dashboardView").classList.remove("hidden");
       document.getElementById("dashboardView").classList.add("flex");
 
-      // Veritabanındaki Isim/Soyisim Gösterimi
-      const displayName = (currentUser.name && currentUser.name !== "Misafir Müşteri" && currentUser.name !== "Misafir") 
+      const displayName = (currentUser.name && !currentUser.name.includes("Misafir")) 
         ? currentUser.name 
-        : "Kahve Sever";
+        : "Adınızı Ekleyin ✏️";
 
       document.getElementById("cardCustomerName").innerText = displayName;
       document.getElementById("cardPhone").innerText = currentUser.phone;
 
-      // Rastgele Eğlenceli Söz
       const randomQuote = coffeeQuotes[Math.floor(Math.random() * coffeeQuotes.length)];
       document.getElementById("funQuote").innerText = `"${randomQuote}"`;
 
