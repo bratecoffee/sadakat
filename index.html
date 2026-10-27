@@ -33,22 +33,35 @@
   <!-- Main Container -->
   <main class="w-full max-w-md flex-1 flex flex-col gap-5 my-auto">
 
-    <!-- Giriş / Kayıt Ol Ekranı -->
+    <!-- Giriş / Kayıt Ekranı -->
     <div id="loginView" class="bg-stone-900/90 border border-stone-800 p-6 rounded-3xl shadow-2xl backdrop-blur-md">
-      <h2 class="text-xl font-bold text-amber-400 mb-1">Hoş Geldiniz ☕</h2>
-      <p class="text-sm text-stone-400 mb-6">Kahve damgalarınızı toplamak ve hediyelerinizi görmek için giriş yapın veya kayıt olun.</p>
       
-      <form onsubmit="handleLogin(event)" class="space-y-4">
+      <!-- Sekme Butonları (Giriş Yap / Kayıt Ol) -->
+      <div class="flex bg-stone-950 p-1 rounded-2xl mb-6 border border-stone-800">
+        <button id="tabLogin" onclick="switchTab('login')" class="flex-1 py-2.5 text-xs font-bold rounded-xl bg-amber-600 text-stone-950 shadow transition">
+          Giriş Yap
+        </button>
+        <button id="tabRegister" onclick="switchTab('register')" class="flex-1 py-2.5 text-xs font-bold rounded-xl text-stone-400 hover:text-white transition">
+          Kayıt Ol
+        </button>
+      </div>
+
+      <h2 id="authTitle" class="text-xl font-bold text-amber-400 mb-1">Tekrar Hoş Geldiniz! ☕</h2>
+      <p id="authSubtitle" class="text-sm text-stone-400 mb-6">Kartınızı açmak için telefon numaranızı girin.</p>
+      
+      <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
+        <div id="nameField" class="hidden">
+          <label class="block text-xs font-medium text-stone-300 mb-1">Adınız Soyadınız</label>
+          <input type="text" id="nameInput" placeholder="Örn: Şener Gülseven" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500">
+        </div>
+
         <div>
           <label class="block text-xs font-medium text-stone-300 mb-1">Telefon Numaranız</label>
           <input type="tel" id="phoneInput" required placeholder="05XX XXX XX XX" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 font-mono">
         </div>
-        <div>
-          <label class="block text-xs font-medium text-stone-300 mb-1">Adınız Soyadınız</label>
-          <input type="text" id="nameInput" placeholder="Örn: Şener Gülseven" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500">
-        </div>
-        <button type="submit" id="loginBtn" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3.5 rounded-xl shadow-lg transition">
-          Giriş Yap / Kartımı Aç
+
+        <button type="submit" id="authBtn" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3.5 rounded-xl shadow-lg transition">
+          Kartımı Aç
         </button>
       </form>
     </div>
@@ -78,10 +91,10 @@
         </div>
       </div>
 
-      <!-- 30 Saniyelik Dinamik Onay Kodu Ekranı -->
+      <!-- 30 Saniyelik Dinamik Rastgele Kod Ekranı -->
       <div class="bg-stone-900 border border-stone-800 p-6 rounded-3xl text-center shadow-xl">
         <p class="text-xs text-stone-400 mb-1">Kasada Baristaya Söyleyeceğiniz Kod:</p>
-        <div class="bg-stone-950 border border-amber-500/30 rounded-2xl py-3 my-2 flex items-center justify-center gap-2">
+        <div class="bg-stone-950 border border-amber-500/30 rounded-2xl py-3.5 my-2 flex items-center justify-center gap-2">
           <span id="dynamicCode" class="text-3xl font-extrabold tracking-[0.3em] text-amber-400 font-mono">------</span>
         </div>
         <div class="flex items-center justify-between text-[11px] text-stone-500 px-2 mt-2">
@@ -137,7 +150,7 @@
 
         <p id="baristaStatus" class="text-xs text-center min-h-[1.25rem] font-bold"></p>
 
-        <!-- Onaylanan Müşteri Kart Bilgisi -->
+        <!-- Onaylanan Müşteri Bilgisi -->
         <div id="approvedInfo" class="hidden bg-emerald-950/80 border border-emerald-500/40 p-4 rounded-2xl text-center">
           <p id="approvedCustomerName" class="text-white font-bold text-sm">...</p>
           <p id="approvedCustomerStatus" class="text-xs text-emerald-300 mt-1">...</p>
@@ -151,7 +164,7 @@
     const API_BASE_URL = "https://sadakat-api.bratecoffee35.workers.dev";
     let currentUser = null;
     let timerInterval = null;
-    let currentCode = "";
+    let activeTab = "login";
 
     window.onload = () => {
       const saved = localStorage.getItem("brate_user");
@@ -161,15 +174,41 @@
       }
     };
 
-    async function handleLogin(e) {
+    function switchTab(tab) {
+      activeTab = tab;
+      const loginBtn = document.getElementById("tabLogin");
+      const regBtn = document.getElementById("tabRegister");
+      const nameField = document.getElementById("nameField");
+      const nameInput = document.getElementById("nameInput");
+
+      if (tab === 'login') {
+        loginBtn.className = "flex-1 py-2.5 text-xs font-bold rounded-xl bg-amber-600 text-stone-950 shadow transition";
+        regBtn.className = "flex-1 py-2.5 text-xs font-bold rounded-xl text-stone-400 hover:text-white transition";
+        nameField.classList.add("hidden");
+        nameInput.removeAttribute("required");
+        document.getElementById("authTitle").innerText = "Tekrar Hoş Geldiniz! ☕";
+        document.getElementById("authSubtitle").innerText = "Kartınızı açmak için telefon numaranızı girin.";
+        document.getElementById("authBtn").innerText = "Giriş Yap";
+      } else {
+        regBtn.className = "flex-1 py-2.5 text-xs font-bold rounded-xl bg-amber-600 text-stone-950 shadow transition";
+        loginBtn.className = "flex-1 py-2.5 text-xs font-bold rounded-xl text-stone-400 hover:text-white transition";
+        nameField.classList.remove("hidden");
+        nameInput.setAttribute("required", "true");
+        document.getElementById("authTitle").innerText = "Kulübe Katılın! 🎉";
+        document.getElementById("authSubtitle").innerText = "Dijital kartınızı oluşturmak için bilgilerinizi doldurun.";
+        document.getElementById("authBtn").innerText = "Kayıt Ol ve Kartımı Aç";
+      }
+    }
+
+    async function handleAuthSubmit(e) {
       e.preventDefault();
       const phone = document.getElementById("phoneInput").value.trim();
       const name = document.getElementById("nameInput").value.trim();
       if (!phone) return;
 
-      document.getElementById("loginBtn").innerText = "Yükleniyor...";
-      await loadCustomerData(phone, name);
-      document.getElementById("loginBtn").innerText = "Giriş Yap / Kartımı Aç";
+      document.getElementById("authBtn").innerText = "Yükleniyor...";
+      await loadCustomerData(phone, activeTab === 'register' ? name : "");
+      document.getElementById("authBtn").innerText = activeTab === 'register' ? "Kayıt Ol ve Kartımı Aç" : "Giriş Yap";
     }
 
     async function loadCustomerData(phone, name = "") {
@@ -184,8 +223,12 @@
           currentUser = data.customer;
           localStorage.setItem("brate_user", JSON.stringify(currentUser));
           renderDashboard();
+        } else {
+          alert("Hata: " + data.error);
         }
-      } catch (err) {}
+      } catch (err) {
+        alert("Bağlantı hatası!");
+      }
     }
 
     function renderDashboard() {
@@ -229,24 +272,25 @@
       startCodeTimer();
     }
 
-    // 30 Saniyelik Dinamik Kod Zamanlayıcısı
+    // Gerçek Rastgele (Hash Tabanlı) 30 Saniyelik OTP Üretici
     function startCodeTimer() {
       if (timerInterval) clearInterval(timerInterval);
 
-      function generateNewCode() {
-        // Telefon ve zamana dayalı 6 haneli dinamik kod
-        const now = Math.floor(Date.now() / 30000); // 30 sn blok
-        let hash = 0;
-        const str = currentUser.phone + "_" + now;
-        for (let i = 0; i < str.length; i++) {
-          hash = (hash << 5) - hash + str.charCodeAt(i);
-          hash |= 0;
+      function generateRandomOTP() {
+        const timeBlock = Math.floor(Date.now() / 30000); // 30 sn blok
+        let seed = 0;
+        const secret = currentUser.phone + "_BRATE_COFFEE_SALT_" + timeBlock;
+
+        for (let i = 0; i < secret.length; i++) {
+          seed = (seed * 31 + secret.charCodeAt(i)) % 2147483647;
         }
-        currentCode = Math.abs(hash % 900000 + 100000).toString();
-        document.getElementById("dynamicCode").innerText = currentCode;
+
+        // 100000 ile 999999 arasında tamamen rastgele 6 haneli kod
+        const otp = Math.floor(100000 + (seed % 900000));
+        document.getElementById("dynamicCode").innerText = otp;
       }
 
-      generateNewCode();
+      generateRandomOTP();
 
       let timeLeft = 30 - (Math.floor(Date.now() / 1000) % 30);
       document.getElementById("codeTimer").innerText = timeLeft + "s";
@@ -254,7 +298,7 @@
       timerInterval = setInterval(() => {
         timeLeft--;
         if (timeLeft <= 0) {
-          generateNewCode();
+          generateRandomOTP();
           timeLeft = 30;
         }
         document.getElementById("codeTimer").innerText = timeLeft + "s";
@@ -267,7 +311,7 @@
       location.reload();
     }
 
-    // Kasiyer Fonksiyonları
+    // Kasiyer Paneli
     function openBaristaModal() {
       document.getElementById("baristaModal").classList.remove("hidden");
       document.getElementById("baristaModal").classList.add("flex");
@@ -320,10 +364,8 @@
           document.getElementById("approvedCustomerName").innerText = data.customer.name || "Müşteri";
           document.getElementById("approvedCustomerStatus").innerText = `${data.message} | Güncel Damga: ${data.customer.stamps}/7`;
 
-          // Temizleme
           document.getElementById("baristaCodeInput").value = "";
 
-          // Eğer açık olan kart bu müşterininki ise güncelle
           if (currentUser && currentUser.phone === phone) {
             currentUser = data.customer;
             localStorage.setItem("brate_user", JSON.stringify(currentUser));
