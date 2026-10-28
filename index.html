@@ -141,7 +141,7 @@
           </button>
         </div>
 
-        <!-- 1. Hızlı Damga Onay Bölümü (Sadece 6 Haneli Kod) -->
+        <!-- 1. Hızlı Damga Onay Bölümü -->
         <div id="adminSectionApprove" class="space-y-4">
           
           <div id="approvalForm">
@@ -167,7 +167,6 @@
               <span id="approvedCustomerPhone" class="text-xs text-amber-300 font-mono">...</span>
             </div>
 
-            <!-- Personel İçin 8 Slot Görünümü -->
             <div class="grid grid-cols-4 gap-2 my-2" id="baristaStampsGrid"></div>
 
             <div class="text-center pt-2">
@@ -181,12 +180,44 @@
 
         <!-- 2. Müşteri Listesi -->
         <div id="adminSectionList" class="hidden space-y-3">
-          <p class="text-xs text-stone-400 text-center">Üye müşteri listesi ve günlük damga izinleri:</p>
+          <p class="text-xs text-stone-400 text-center">Detaylı dijital kartı görmek için isme tıklayın:</p>
           <div id="customerListContainer" class="max-h-60 overflow-y-auto space-y-2 pr-1"></div>
         </div>
 
       </div>
 
+    </div>
+  </div>
+
+  <!-- Yönetici İçin Seçilen Müşterinin Kart Detay Modalı -->
+  <div id="customerDetailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-stone-900 border border-stone-800 w-full max-w-sm rounded-3xl p-5 relative shadow-2xl">
+      <button onclick="closeCustomerDetailModal()" class="absolute top-3 right-3 text-stone-400 hover:text-white">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="bg-brate-card border border-amber-900/40 rounded-2xl p-5 shadow-xl relative overflow-hidden my-2">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <span class="text-[10px] text-amber-200/60 uppercase tracking-widest font-semibold block">Müşteri Kartı</span>
+            <h3 id="modalCustomerName" class="text-lg font-bold text-white capitalize">...</h3>
+          </div>
+          <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold border border-amber-500/30">
+            Brate Coffee
+          </span>
+        </div>
+
+        <div class="grid grid-cols-4 gap-2 my-4" id="modalStampsGrid"></div>
+
+        <div class="flex justify-between items-center pt-2 border-t border-white/10 text-[11px] text-amber-200/70">
+          <span id="modalCustomerPhone">05XX *** ** **</span>
+          <span id="modalCustomerRewards" class="text-amber-400 font-bold">Hediye: 0</span>
+        </div>
+      </div>
+
+      <button onclick="closeCustomerDetailModal()" class="w-full mt-3 bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold py-2.5 rounded-xl text-xs">
+        Kapat
+      </button>
     </div>
   </div>
 
@@ -271,7 +302,6 @@
       document.getElementById("cardCustomerName").innerText = currentUser.name || "Kahve Sever";
       document.getElementById("cardPhone").innerText = currentUser.phone;
 
-      // 8 Slot Grid
       const grid = document.getElementById("stampsGrid");
       grid.innerHTML = "";
       for (let i = 0; i < 8; i++) {
@@ -305,7 +335,6 @@
       startCustomerLivePoll();
     }
 
-    // Müşteri Ekranının Canlı Yenilenmesi (2 Saniyede bir kontrol)
     function startCustomerLivePoll() {
       if (customerPollInterval) clearInterval(customerPollInterval);
       customerPollInterval = setInterval(async () => {
@@ -329,7 +358,6 @@
       }, 2000);
     }
 
-    // OTP Üretici
     function startCodeTimer() {
       if (timerInterval) clearInterval(timerInterval);
 
@@ -435,15 +463,26 @@
           container.innerHTML = "";
           data.customers.forEach(c => {
             const item = document.createElement("div");
-            item.className = "bg-stone-950 border border-stone-800 p-3 rounded-2xl flex justify-between items-center";
+            item.className = "bg-stone-950 border border-stone-800 p-3 rounded-2xl flex justify-between items-center transition hover:border-amber-500/40 cursor-pointer";
+            
+            // İsme tıklanınca kart detayını gösterme
+            item.onclick = (e) => {
+              if (e.target.tagName !== 'BUTTON') {
+                showCustomerDetailModal(c);
+              }
+            };
+
             item.innerHTML = `
               <div>
-                <p class="text-xs font-bold text-white capitalize">${c.name || 'Müşteri'}</p>
-                <p class="text-[10px] text-stone-400 font-mono">${c.phone} | Damga: ${c.stamps}/7</p>
+                <p class="text-xs font-bold text-white capitalize hover:text-amber-400 flex items-center gap-1.5">
+                  <i class="fa-solid fa-address-card text-amber-500/70 text-[11px]"></i>
+                  ${c.name || 'Müşteri'}
+                </p>
+                <p class="text-[10px] text-stone-400 font-mono mt-0.5">${c.phone} | Damga: ${c.stamps}/7</p>
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-[10px] ${c.allow_multiple ? 'text-amber-400 font-bold' : 'text-stone-500'}">
-                  ${c.allow_multiple ? 'Çoklu Damga' : 'Tek Damga'}
+                  ${c.allow_multiple ? 'Çoklu' : 'Tek'}
                 </span>
                 <button onclick="toggleCustomerLimit('${c.phone}', ${c.allow_multiple ? 0 : 1})" class="text-xs px-2.5 py-1 rounded-lg border ${c.allow_multiple ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-stone-800 text-stone-400 border-stone-700'}">
                   ${c.allow_multiple ? 'Sınırı Aç' : 'Sınırsız Yap'}
@@ -456,6 +495,40 @@
       } catch (err) {
         container.innerHTML = "<p class='text-xs text-red-400 text-center py-4'>Liste yüklenemedi!</p>";
       }
+    }
+
+    // Seçilen Müşterinin Dijital Kart Detayını Gösteren Modal
+    function showCustomerDetailModal(c) {
+      document.getElementById("modalCustomerName").innerText = c.name || "Müşteri";
+      document.getElementById("modalCustomerPhone").innerText = c.phone;
+      document.getElementById("modalCustomerRewards").innerText = `Hediye Kahve: ${c.rewards}`;
+
+      const mGrid = document.getElementById("modalStampsGrid");
+      mGrid.innerHTML = "";
+      for (let i = 0; i < 8; i++) {
+        const isStamped = i < c.stamps;
+        const isGiftSlot = i === 7;
+
+        const slot = document.createElement("div");
+        slot.className = `aspect-square rounded-full border flex items-center justify-center ${
+          isStamped ? "bg-amber-400 border-amber-300 text-stone-950 font-bold shadow" : "bg-black/40 border-white/20 text-white/20"
+        }`;
+
+        if (isGiftSlot) {
+          slot.innerHTML = `<i class="fa-solid fa-gift ${isStamped ? 'text-stone-950 text-sm' : 'text-amber-400/60 text-xs'}"></i>`;
+        } else {
+          slot.innerHTML = `<i class="fa-solid fa-mug-hot ${isStamped ? 'text-stone-950 text-sm' : 'text-white/20 text-xs'}"></i>`;
+        }
+        mGrid.appendChild(slot);
+      }
+
+      document.getElementById("customerDetailModal").classList.remove("hidden");
+      document.getElementById("customerDetailModal").classList.add("flex");
+    }
+
+    function closeCustomerDetailModal() {
+      document.getElementById("customerDetailModal").classList.add("hidden");
+      document.getElementById("customerDetailModal").classList.remove("flex");
     }
 
     async function toggleCustomerLimit(phone, allow_multiple) {
@@ -472,7 +545,6 @@
       } catch (err) {}
     }
 
-    // Sadece 6 Haneli Kodu Girerek Hızlı Onay
     async function submitFastVerifyCode() {
       const code = document.getElementById("baristaCodeInput").value.trim();
       const pin = baristaPin;
@@ -486,7 +558,7 @@
         return;
       }
 
-      status.innerText = "Sistem Müşteriyi Arıyor ve Doğruluyor...";
+      status.innerText = "Doğrulanıyor...";
       status.className = "text-xs text-center text-amber-400 font-bold";
 
       try {
@@ -508,7 +580,6 @@
           document.getElementById("approvedCustomerName").innerText = data.customer.name || "Müşteri";
           document.getElementById("approvedCustomerPhone").innerText = data.customer.phone;
 
-          // Personel Ekranında Kart Çizimi
           const bGrid = document.getElementById("baristaStampsGrid");
           bGrid.innerHTML = "";
           for (let i = 0; i < 8; i++) {
