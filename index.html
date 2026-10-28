@@ -121,12 +121,15 @@
         <i class="fa-solid fa-xmark text-xl"></i>
       </button>
 
-      <!-- PIN Girişi -->
+      <!-- PIN Girişi (Klavyeden Enter Destekli Form) -->
       <div id="baristaPinStep">
         <h3 class="text-lg font-bold text-amber-400 mb-2">Kasa Yönetici Paneli</h3>
         <p class="text-xs text-stone-400 mb-4">Lütfen Kasiyer PIN kodunu girin:</p>
-        <input type="password" id="baristaPinInput" placeholder="PIN" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white text-center tracking-widest text-lg mb-4 focus:outline-none focus:border-amber-500">
-        <button onclick="verifyBaristaPin()" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3 rounded-xl">Giriş Yap</button>
+        
+        <form onsubmit="handlePinSubmit(event)">
+          <input type="password" id="baristaPinInput" placeholder="PIN" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white text-center tracking-widest text-lg mb-4 focus:outline-none focus:border-amber-500">
+          <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3 rounded-xl">Giriş Yap</button>
+        </form>
       </div>
 
       <!-- Kasiyer Kod Onaylama & Müşteri Listesi Ekranı -->
@@ -141,18 +144,20 @@
           </button>
         </div>
 
-        <!-- 1. Hızlı Damga Onay Bölümü -->
+        <!-- 1. Hızlı Damga Onay Bölümü (Enter Destekli Form) -->
         <div id="adminSectionApprove" class="space-y-4">
           
           <div id="approvalForm">
-            <div>
-              <label class="block text-xs text-stone-400 mb-1 text-center">Müşterinin Söylediği 6 Haneli Kod</label>
-              <input type="text" id="baristaCodeInput" maxlength="6" placeholder="123456" autofocus class="w-full bg-stone-950 border border-amber-500/50 rounded-2xl px-4 py-4 text-amber-400 text-center text-3xl font-extrabold tracking-[0.2em] focus:outline-none focus:border-amber-500 font-mono shadow-inner">
-            </div>
+            <form onsubmit="handleFastVerifySubmit(event)">
+              <div>
+                <label class="block text-xs text-stone-400 mb-1 text-center">Müşterinin Söylediği 6 Haneli Kod</label>
+                <input type="text" id="baristaCodeInput" maxlength="6" placeholder="123456" autofocus class="w-full bg-stone-950 border border-amber-500/50 rounded-2xl px-4 py-4 text-amber-400 text-center text-3xl font-extrabold tracking-[0.2em] focus:outline-none focus:border-amber-500 font-mono shadow-inner">
+              </div>
 
-            <button onclick="submitFastVerifyCode()" class="w-full mt-4 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-4 rounded-xl text-sm shadow-lg uppercase tracking-wider">
-              Kodu Onayla ve Damgayı Bas ☕
-            </button>
+              <button type="submit" class="w-full mt-4 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-4 rounded-xl text-sm shadow-lg uppercase tracking-wider">
+                Kodu Onayla ve Damgayı Bas ☕
+              </button>
+            </form>
           </div>
 
           <p id="baristaStatus" class="text-xs text-center min-h-[1.25rem] font-bold"></p>
@@ -241,7 +246,7 @@
     
     // 1 Dakikalık Otomatik Yönetici Çıkış Sayacı
     let adminInactivityTimer = null;
-    const ADMIN_TIMEOUT_MS = 60000; // 60 saniye
+    const ADMIN_TIMEOUT_MS = 60000;
 
     window.onload = () => {
       const saved = localStorage.getItem("brate_user");
@@ -252,7 +257,6 @@
       setupAdminActivityListeners();
     };
 
-    // Yönetici Hareket Takibi (Dokunma, Tıklama, Tuş Basma)
     function setupAdminActivityListeners() {
       const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
       events.forEach(evt => {
@@ -261,7 +265,7 @@
     }
 
     function resetAdminInactivityTimer() {
-      if (baristaPin) { // Yönetici giriş yapmış durumdaysa sayacı sıfırla
+      if (baristaPin) {
         if (adminInactivityTimer) clearTimeout(adminInactivityTimer);
         adminInactivityTimer = setTimeout(autoLogoutAdmin, ADMIN_TIMEOUT_MS);
       }
@@ -272,11 +276,9 @@
         baristaPin = "";
         if (adminInactivityTimer) clearTimeout(adminInactivityTimer);
         
-        // Açık olan tüm yönetici modallarını kapatıp başa döner
         closeCustomerDetailModal();
         closeBaristaModal();
         
-        // PIN ekranını sıfırla
         document.getElementById("baristaPinStep").classList.remove("hidden");
         document.getElementById("baristaActionStep").classList.add("hidden");
         document.getElementById("baristaPinInput").value = "";
@@ -457,6 +459,15 @@
     function openBaristaModal() {
       document.getElementById("baristaModal").classList.remove("hidden");
       document.getElementById("baristaModal").classList.add("flex");
+      
+      // Yönetici Girişi butonuna basıldığında PIN kutusuna Otomatik Odaklan
+      setTimeout(() => {
+        const pinInput = document.getElementById("baristaPinInput");
+        if (pinInput) {
+          pinInput.focus();
+          pinInput.select();
+        }
+      }, 150);
     }
 
     function closeBaristaModal() {
@@ -464,16 +475,32 @@
       document.getElementById("baristaModal").classList.remove("flex");
     }
 
+    function handlePinSubmit(e) {
+      e.preventDefault();
+      verifyBaristaPin();
+    }
+
     function verifyBaristaPin() {
       const pin = document.getElementById("baristaPinInput").value;
       if (pin === "1923") {
         baristaPin = pin;
-        resetAdminInactivityTimer(); // Giriş yapıldığında 1 dakikalık sayacı başlat
+        resetAdminInactivityTimer();
         document.getElementById("baristaPinStep").classList.add("hidden");
         document.getElementById("baristaActionStep").classList.remove("hidden");
-        setTimeout(() => document.getElementById("baristaCodeInput").focus(), 200);
+        
+        // Giriş yapıldıktan sonra direkt 6 haneli OTP kutusuna odaklan
+        setTimeout(() => {
+          const codeInput = document.getElementById("baristaCodeInput");
+          if (codeInput) {
+            codeInput.focus();
+            codeInput.select();
+          }
+        }, 150);
       } else {
         alert("Hatalı PIN!");
+        const pinInput = document.getElementById("baristaPinInput");
+        pinInput.focus();
+        pinInput.select();
       }
     }
 
@@ -489,6 +516,7 @@
         btnList.className = "flex-1 py-2 text-xs font-bold rounded-xl text-stone-400 hover:text-white";
         secApprove.classList.remove("hidden");
         secList.classList.add("hidden");
+        setTimeout(() => document.getElementById("baristaCodeInput").focus(), 100);
       } else {
         btnList.className = "flex-1 py-2 text-xs font-bold rounded-xl bg-amber-600 text-stone-950";
         btnApprove.className = "flex-1 py-2 text-xs font-bold rounded-xl text-stone-400 hover:text-white";
@@ -643,6 +671,11 @@
       } catch (err) {}
     }
 
+    function handleFastVerifySubmit(e) {
+      e.preventDefault();
+      submitFastVerifyCode();
+    }
+
     async function submitFastVerifyCode() {
       resetAdminInactivityTimer();
       const code = document.getElementById("baristaCodeInput").value.trim();
@@ -720,7 +753,7 @@
       document.getElementById("approvedInfo").classList.add("hidden");
       document.getElementById("baristaCodeInput").value = "";
       document.getElementById("baristaStatus").innerText = "";
-      document.getElementById("baristaCodeInput").focus();
+      setTimeout(() => document.getElementById("baristaCodeInput").focus(), 100);
     }
   </script>
 </body>
