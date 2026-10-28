@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
@@ -134,35 +134,30 @@
         
         <div class="flex bg-stone-950 p-1 rounded-2xl border border-stone-800">
           <button id="adminTabApprove" onclick="switchAdminTab('approve')" class="flex-1 py-2 text-xs font-bold rounded-xl bg-amber-600 text-stone-950">
-            Damga Onayla
+            Hızlı Damga Onayla
           </button>
           <button id="adminTabList" onclick="switchAdminTab('list')" class="flex-1 py-2 text-xs font-bold rounded-xl text-stone-400 hover:text-white">
             Müşteri Listesi
           </button>
         </div>
 
-        <!-- 1. Damga Onay Bölümü -->
+        <!-- 1. Hızlı Damga Onay Bölümü (Sadece 6 Haneli Kod) -->
         <div id="adminSectionApprove" class="space-y-4">
           
           <div id="approvalForm">
             <div>
-              <label class="block text-xs text-stone-400 mb-1">Müşteri Telefon Numarası</label>
-              <input type="tel" id="baristaPhoneInput" placeholder="05XX XXX XX XX" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white text-center text-lg focus:outline-none focus:border-amber-500 font-mono">
+              <label class="block text-xs text-stone-400 mb-1 text-center">Müşterinin Söylediği 6 Haneli Kod</label>
+              <input type="text" id="baristaCodeInput" maxlength="6" placeholder="123456" autofocus class="w-full bg-stone-950 border border-amber-500/50 rounded-2xl px-4 py-4 text-amber-400 text-center text-3xl font-extrabold tracking-[0.2em] focus:outline-none focus:border-amber-500 font-mono shadow-inner">
             </div>
 
-            <div class="mt-3">
-              <label class="block text-xs text-stone-400 mb-1">Müşterinin Söylediği 6 Haneli Kod</label>
-              <input type="text" id="baristaCodeInput" maxlength="6" placeholder="123456" class="w-full bg-stone-950 border border-amber-500/40 rounded-xl px-4 py-3 text-amber-400 text-center text-2xl font-extrabold tracking-widest focus:outline-none focus:border-amber-500 font-mono">
-            </div>
-
-            <button onclick="submitVerifyCode()" class="w-full mt-4 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3.5 rounded-xl text-sm shadow-lg">
+            <button onclick="submitFastVerifyCode()" class="w-full mt-4 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-4 rounded-xl text-sm shadow-lg uppercase tracking-wider">
               Kodu Onayla ve Damgayı Bas ☕
             </button>
           </div>
 
           <p id="baristaStatus" class="text-xs text-center min-h-[1.25rem] font-bold"></p>
 
-          <!-- Onaylanan Müşterinin Canlı Dijital Kart Önizlemesi (Personel Ekranında Görünür) -->
+          <!-- Onaylanan Müşterinin Dijital Kart Önizlemesi -->
           <div id="approvedInfo" class="hidden bg-brate-card border border-amber-500/40 p-5 rounded-3xl shadow-2xl flex-col gap-3">
             <div class="flex justify-between items-center border-b border-white/10 pb-2">
               <div>
@@ -310,7 +305,7 @@
       startCustomerLivePoll();
     }
 
-    // Müşteri Ekranının Canlı Yenilenmesi (3 Saniyede bir arka plan güncellemesi)
+    // Müşteri Ekranının Canlı Yenilenmesi (2 Saniyede bir kontrol)
     function startCustomerLivePoll() {
       if (customerPollInterval) clearInterval(customerPollInterval);
       customerPollInterval = setInterval(async () => {
@@ -331,10 +326,10 @@
             }
           } catch (e) {}
         }
-      }, 3000);
+      }, 2000);
     }
 
-    // Rastgele OTP Üretici
+    // OTP Üretici
     function startCodeTimer() {
       if (timerInterval) clearInterval(timerInterval);
 
@@ -398,6 +393,7 @@
         baristaPin = pin;
         document.getElementById("baristaPinStep").classList.add("hidden");
         document.getElementById("baristaActionStep").classList.remove("hidden");
+        setTimeout(() => document.getElementById("baristaCodeInput").focus(), 200);
       } else {
         alert("Hatalı PIN!");
       }
@@ -476,33 +472,33 @@
       } catch (err) {}
     }
 
-    async function submitVerifyCode() {
-      const phone = document.getElementById("baristaPhoneInput").value.trim();
+    // Sadece 6 Haneli Kodu Girerek Hızlı Onay
+    async function submitFastVerifyCode() {
       const code = document.getElementById("baristaCodeInput").value.trim();
       const pin = baristaPin;
       const status = document.getElementById("baristaStatus");
       const approvedInfo = document.getElementById("approvedInfo");
       const approvalForm = document.getElementById("approvalForm");
 
-      if (!phone || !code || code.length !== 6) {
-        status.innerText = "Lütfen Telefon ve 6 Haneli Kodu Eksiksiz Girin!";
+      if (!code || code.length !== 6) {
+        status.innerText = "Lütfen 6 Haneli Kodu Eksiksiz Girin!";
         status.className = "text-xs text-center text-red-400 font-bold";
         return;
       }
 
-      status.innerText = "Doğrulanıyor...";
+      status.innerText = "Sistem Müşteriyi Arıyor ve Doğruluyor...";
       status.className = "text-xs text-center text-amber-400 font-bold";
 
       try {
-        const res = await fetch(`${API_BASE_URL}/api/verify-code`, {
+        const res = await fetch(`${API_BASE_URL}/api/verify-fast-otp`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone, code, pin })
+          body: JSON.stringify({ code, pin })
         });
         const data = await res.json();
 
         if (data.success) {
-          status.innerText = "İşlem Başarılı! 🎉";
+          status.innerText = "Damga Başarıyla Basıldı! 🎉";
           status.className = "text-xs text-center text-emerald-400 font-bold";
 
           approvalForm.classList.add("hidden");
@@ -512,7 +508,7 @@
           document.getElementById("approvedCustomerName").innerText = data.customer.name || "Müşteri";
           document.getElementById("approvedCustomerPhone").innerText = data.customer.phone;
 
-          // Personel İçin 8 Slot Görünümünü Çizme
+          // Personel Ekranında Kart Çizimi
           const bGrid = document.getElementById("baristaStampsGrid");
           bGrid.innerHTML = "";
           for (let i = 0; i < 8; i++) {
@@ -532,7 +528,7 @@
             bGrid.appendChild(slot);
           }
 
-          if (currentUser && currentUser.phone === phone) {
+          if (currentUser && currentUser.phone === data.customer.phone) {
             currentUser = data.customer;
             localStorage.setItem("brate_user", JSON.stringify(currentUser));
             renderDashboard();
@@ -552,8 +548,8 @@
       document.getElementById("approvalForm").classList.remove("hidden");
       document.getElementById("approvedInfo").classList.add("hidden");
       document.getElementById("baristaCodeInput").value = "";
-      document.getElementById("baristaPhoneInput").value = "";
       document.getElementById("baristaStatus").innerText = "";
+      document.getElementById("baristaCodeInput").focus();
     }
   </script>
 </body>
