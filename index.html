@@ -121,20 +121,25 @@
         <i class="fa-solid fa-xmark text-xl"></i>
       </button>
 
-      <!-- PIN Girişi (Klavyeden Enter Destekli Form) -->
+      <!-- PIN Girişi (Kişisel Personel PIN) -->
       <div id="baristaPinStep">
-        <h3 class="text-lg font-bold text-amber-400 mb-2">Kasa Yönetici Paneli</h3>
-        <p class="text-xs text-stone-400 mb-4">Lütfen Kasiyer PIN kodunu girin:</p>
+        <h3 class="text-lg font-bold text-amber-400 mb-1">Kasa Yönetici Paneli</h3>
+        <p class="text-xs text-stone-400 mb-4">Personel PIN kodunuzu girin:</p>
         
         <form onsubmit="handlePinSubmit(event)">
           <input type="password" id="baristaPinInput" placeholder="PIN" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white text-center tracking-widest text-lg mb-4 focus:outline-none focus:border-amber-500">
-          <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3 rounded-xl">Giriş Yap</button>
+          <button type="submit" id="pinSubmitBtn" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3 rounded-xl">Giriş Yap</button>
         </form>
       </div>
 
       <!-- Kasiyer Kod Onaylama & Müşteri Listesi Ekranı -->
       <div id="baristaActionStep" class="hidden space-y-4">
         
+        <div class="flex justify-between items-center bg-stone-950 px-4 py-2 rounded-xl border border-stone-800 text-xs">
+          <span class="text-stone-400">Aktif Personel:</span>
+          <span id="activeStaffName" class="text-amber-400 font-bold capitalize">...</span>
+        </div>
+
         <div class="flex bg-stone-950 p-1 rounded-2xl border border-stone-800">
           <button id="adminTabApprove" onclick="switchAdminTab('approve')" class="flex-1 py-2 text-xs font-bold rounded-xl bg-amber-600 text-stone-950">
             Hızlı Damga Onayla
@@ -144,7 +149,7 @@
           </button>
         </div>
 
-        <!-- 1. Hızlı Damga Onay Bölümü (Enter Destekli Form) -->
+        <!-- 1. Hızlı Damga Onay Bölümü -->
         <div id="adminSectionApprove" class="space-y-4">
           
           <div id="approvalForm">
@@ -242,6 +247,7 @@
     let customerPollInterval = null;
     let activeTab = "login";
     let baristaPin = "";
+    let activeStaffName = "";
     let selectedModalPhone = "";
     
     // 1 Dakikalık Otomatik Yönetici Çıkış Sayacı
@@ -274,6 +280,7 @@
     function autoLogoutAdmin() {
       if (baristaPin) {
         baristaPin = "";
+        activeStaffName = "";
         if (adminInactivityTimer) clearTimeout(adminInactivityTimer);
         
         closeCustomerDetailModal();
@@ -460,7 +467,6 @@
       document.getElementById("baristaModal").classList.remove("hidden");
       document.getElementById("baristaModal").classList.add("flex");
       
-      // Yönetici Girişi butonuna basıldığında PIN kutusuna Otomatik Odaklan
       setTimeout(() => {
         const pinInput = document.getElementById("baristaPinInput");
         if (pinInput) {
@@ -480,27 +486,47 @@
       verifyBaristaPin();
     }
 
-    function verifyBaristaPin() {
-      const pin = document.getElementById("baristaPinInput").value;
-      if (pin === "1923") {
-        baristaPin = pin;
-        resetAdminInactivityTimer();
-        document.getElementById("baristaPinStep").classList.add("hidden");
-        document.getElementById("baristaActionStep").classList.remove("hidden");
-        
-        // Giriş yapıldıktan sonra direkt 6 haneli OTP kutusuna odaklan
-        setTimeout(() => {
-          const codeInput = document.getElementById("baristaCodeInput");
-          if (codeInput) {
-            codeInput.focus();
-            codeInput.select();
-          }
-        }, 150);
-      } else {
-        alert("Hatalı PIN!");
-        const pinInput = document.getElementById("baristaPinInput");
-        pinInput.focus();
-        pinInput.select();
+    async function verifyBaristaPin() {
+      const pin = document.getElementById("baristaPinInput").value.trim();
+      const btn = document.getElementById("pinSubmitBtn");
+      if (!pin) return;
+
+      btn.innerText = "Doğrulanıyor...";
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/verify-pin`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pin })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          baristaPin = pin;
+          activeStaffName = data.staff.name;
+          document.getElementById("activeStaffName").innerText = activeStaffName;
+
+          resetAdminInactivityTimer();
+          document.getElementById("baristaPinStep").classList.add("hidden");
+          document.getElementById("baristaActionStep").classList.remove("hidden");
+          
+          setTimeout(() => {
+            const codeInput = document.getElementById("baristaCodeInput");
+            if (codeInput) {
+              codeInput.focus();
+              codeInput.select();
+            }
+          }, 150);
+        } else {
+          alert("Hatalı Personel PIN!");
+          const pinInput = document.getElementById("baristaPinInput");
+          pinInput.focus();
+          pinInput.select();
+        }
+      } catch (err) {
+        alert("Bağlantı Hatası!");
+      } finally {
+        btn.innerText = "Giriş Yap";
       }
     }
 
@@ -702,7 +728,7 @@
         const data = await res.json();
 
         if (data.success) {
-          status.innerText = "Damga Başarıyla Basıldı! 🎉";
+          status.innerText = `İşlem Başarılı (${data.staffName})! 🎉`;
           status.className = "text-xs text-center text-emerald-400 font-bold";
 
           approvalForm.classList.add("hidden");
