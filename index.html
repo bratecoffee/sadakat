@@ -238,6 +238,10 @@
     let activeTab = "login";
     let baristaPin = "";
     let selectedModalPhone = "";
+    
+    // 1 Dakikalık Otomatik Yönetici Çıkış Sayacı
+    let adminInactivityTimer = null;
+    const ADMIN_TIMEOUT_MS = 60000; // 60 saniye
 
     window.onload = () => {
       const saved = localStorage.getItem("brate_user");
@@ -245,7 +249,42 @@
         currentUser = JSON.parse(saved);
         loadCustomerData(currentUser.phone);
       }
+      setupAdminActivityListeners();
     };
+
+    // Yönetici Hareket Takibi (Dokunma, Tıklama, Tuş Basma)
+    function setupAdminActivityListeners() {
+      const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
+      events.forEach(evt => {
+        window.addEventListener(evt, resetAdminInactivityTimer, true);
+      });
+    }
+
+    function resetAdminInactivityTimer() {
+      if (baristaPin) { // Yönetici giriş yapmış durumdaysa sayacı sıfırla
+        if (adminInactivityTimer) clearTimeout(adminInactivityTimer);
+        adminInactivityTimer = setTimeout(autoLogoutAdmin, ADMIN_TIMEOUT_MS);
+      }
+    }
+
+    function autoLogoutAdmin() {
+      if (baristaPin) {
+        baristaPin = "";
+        if (adminInactivityTimer) clearTimeout(adminInactivityTimer);
+        
+        // Açık olan tüm yönetici modallarını kapatıp başa döner
+        closeCustomerDetailModal();
+        closeBaristaModal();
+        
+        // PIN ekranını sıfırla
+        document.getElementById("baristaPinStep").classList.remove("hidden");
+        document.getElementById("baristaActionStep").classList.add("hidden");
+        document.getElementById("baristaPinInput").value = "";
+        resetBaristaForm();
+        
+        alert("1 dakika boyunca işlem yapılmadığı için Kasa Yönetici Paneli güvenlik nedeniyle kapatıldı.");
+      }
+    }
 
     function switchTab(tab) {
       activeTab = tab;
@@ -429,6 +468,7 @@
       const pin = document.getElementById("baristaPinInput").value;
       if (pin === "1923") {
         baristaPin = pin;
+        resetAdminInactivityTimer(); // Giriş yapıldığında 1 dakikalık sayacı başlat
         document.getElementById("baristaPinStep").classList.add("hidden");
         document.getElementById("baristaActionStep").classList.remove("hidden");
         setTimeout(() => document.getElementById("baristaCodeInput").focus(), 200);
@@ -438,6 +478,7 @@
     }
 
     function switchAdminTab(tab) {
+      resetAdminInactivityTimer();
       const btnApprove = document.getElementById("adminTabApprove");
       const btnList = document.getElementById("adminTabList");
       const secApprove = document.getElementById("adminSectionApprove");
@@ -458,6 +499,7 @@
     }
 
     async function loadCustomerList() {
+      resetAdminInactivityTimer();
       const container = document.getElementById("customerListContainer");
       container.innerHTML = "<p class='text-xs text-stone-500 text-center py-4'>Yükleniyor...</p>";
 
@@ -507,6 +549,7 @@
     }
 
     function showCustomerDetailModal(c) {
+      resetAdminInactivityTimer();
       selectedModalPhone = c.phone;
       document.getElementById("modalCustomerName").innerText = c.name || "Müşteri";
       document.getElementById("modalCustomerPhone").innerText = c.phone;
@@ -546,6 +589,7 @@
     }
 
     async function redeemCustomerReward() {
+      resetAdminInactivityTimer();
       const status = document.getElementById("modalStatus");
       status.innerText = "İşlem yapılıyor...";
       status.className = "text-xs text-center text-amber-400 font-bold mt-2";
@@ -585,6 +629,7 @@
     }
 
     async function toggleCustomerLimit(phone, allow_multiple) {
+      resetAdminInactivityTimer();
       try {
         const res = await fetch(`${API_BASE_URL}/api/admin/toggle-limit`, {
           method: "POST",
@@ -599,6 +644,7 @@
     }
 
     async function submitFastVerifyCode() {
+      resetAdminInactivityTimer();
       const code = document.getElementById("baristaCodeInput").value.trim();
       const pin = baristaPin;
       const status = document.getElementById("baristaStatus");
@@ -669,6 +715,7 @@
     }
 
     function resetBaristaForm() {
+      resetAdminInactivityTimer();
       document.getElementById("approvalForm").classList.remove("hidden");
       document.getElementById("approvedInfo").classList.add("hidden");
       document.getElementById("baristaCodeInput").value = "";
