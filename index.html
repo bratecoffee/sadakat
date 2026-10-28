@@ -180,7 +180,7 @@
 
         <!-- 2. Müşteri Listesi -->
         <div id="adminSectionList" class="hidden space-y-3">
-          <p class="text-xs text-stone-400 text-center">Detaylı dijital kartı görmek için isme tıklayın:</p>
+          <p class="text-xs text-stone-400 text-center">Detaylı kart veya hediye kullanımı için isme tıklayın:</p>
           <div id="customerListContainer" class="max-h-60 overflow-y-auto space-y-2 pr-1"></div>
         </div>
 
@@ -189,7 +189,7 @@
     </div>
   </div>
 
-  <!-- Yönetici İçin Seçilen Müşterinin Kart Detay Modalı -->
+  <!-- Yönetici İçin Seçilen Müşterinin Kart Detay & Hediye Kullanım Modalı -->
   <div id="customerDetailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-stone-900 border border-stone-800 w-full max-w-sm rounded-3xl p-5 relative shadow-2xl">
       <button onclick="closeCustomerDetailModal()" class="absolute top-3 right-3 text-stone-400 hover:text-white">
@@ -215,7 +215,16 @@
         </div>
       </div>
 
-      <button onclick="closeCustomerDetailModal()" class="w-full mt-3 bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold py-2.5 rounded-xl text-xs">
+      <!-- Hediye Kahve Düşme Butonu -->
+      <div id="modalRewardActionContainer" class="mt-3">
+        <button id="btnRedeemReward" onclick="redeemCustomerReward()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg">
+          <i class="fa-solid fa-gift text-sm"></i> 1 Hediye Kahve Kullan (Düş)
+        </button>
+      </div>
+
+      <p id="modalStatus" class="text-xs text-center mt-2 min-h-[1rem] font-bold"></p>
+
+      <button onclick="closeCustomerDetailModal()" class="w-full mt-2 bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold py-2.5 rounded-xl text-xs">
         Kapat
       </button>
     </div>
@@ -228,6 +237,7 @@
     let customerPollInterval = null;
     let activeTab = "login";
     let baristaPin = "";
+    let selectedModalPhone = "";
 
     window.onload = () => {
       const saved = localStorage.getItem("brate_user");
@@ -465,7 +475,6 @@
             const item = document.createElement("div");
             item.className = "bg-stone-950 border border-stone-800 p-3 rounded-2xl flex justify-between items-center transition hover:border-amber-500/40 cursor-pointer";
             
-            // İsme tıklanınca kart detayını gösterme
             item.onclick = (e) => {
               if (e.target.tagName !== 'BUTTON') {
                 showCustomerDetailModal(c);
@@ -478,7 +487,7 @@
                   <i class="fa-solid fa-address-card text-amber-500/70 text-[11px]"></i>
                   ${c.name || 'Müşteri'}
                 </p>
-                <p class="text-[10px] text-stone-400 font-mono mt-0.5">${c.phone} | Damga: ${c.stamps}/7</p>
+                <p class="text-[10px] text-stone-400 font-mono mt-0.5">${c.phone} | Damga: ${c.stamps}/7 | Hediye: ${c.rewards}</p>
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-[10px] ${c.allow_multiple ? 'text-amber-400 font-bold' : 'text-stone-500'}">
@@ -497,11 +506,21 @@
       }
     }
 
-    // Seçilen Müşterinin Dijital Kart Detayını Gösteren Modal
     function showCustomerDetailModal(c) {
+      selectedModalPhone = c.phone;
       document.getElementById("modalCustomerName").innerText = c.name || "Müşteri";
       document.getElementById("modalCustomerPhone").innerText = c.phone;
       document.getElementById("modalCustomerRewards").innerText = `Hediye Kahve: ${c.rewards}`;
+      document.getElementById("modalStatus").innerText = "";
+
+      const btnRedeem = document.getElementById("btnRedeemReward");
+      if (c.rewards <= 0) {
+        btnRedeem.disabled = true;
+        btnRedeem.className = "w-full bg-stone-800 text-stone-500 cursor-not-allowed font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2";
+      } else {
+        btnRedeem.disabled = false;
+        btnRedeem.className = "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg";
+      }
 
       const mGrid = document.getElementById("modalStampsGrid");
       mGrid.innerHTML = "";
@@ -524,6 +543,40 @@
 
       document.getElementById("customerDetailModal").classList.remove("hidden");
       document.getElementById("customerDetailModal").classList.add("flex");
+    }
+
+    async function redeemCustomerReward() {
+      const status = document.getElementById("modalStatus");
+      status.innerText = "İşlem yapılıyor...";
+      status.className = "text-xs text-center text-amber-400 font-bold mt-2";
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/redeem-reward`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: selectedModalPhone, pin: baristaPin })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          status.innerText = "1 Hediye Kahve Başarıyla Düşüldü! 🎁";
+          status.className = "text-xs text-center text-emerald-400 font-bold mt-2";
+          showCustomerDetailModal(data.customer);
+          loadCustomerList();
+
+          if (currentUser && currentUser.phone === selectedModalPhone) {
+            currentUser = data.customer;
+            localStorage.setItem("brate_user", JSON.stringify(currentUser));
+            renderDashboard();
+          }
+        } else {
+          status.innerText = data.error;
+          status.className = "text-xs text-center text-red-400 font-bold mt-2";
+        }
+      } catch (err) {
+        status.innerText = "Bağlantı Hatası!";
+        status.className = "text-xs text-center text-red-400 font-bold mt-2";
+      }
     }
 
     function closeCustomerDetailModal() {
