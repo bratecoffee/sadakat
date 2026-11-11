@@ -648,6 +648,10 @@
 
         if (data.success) {
           allAdminCustomers = data.customers || [];
+          
+          // Türkçe alfabe sıralaması front-end tarafında yapılır
+          allAdminCustomers.sort((a, b) => (a.name || '').localeCompare((b.name || ''), 'tr'));
+          
           renderAdminCustomers(allAdminCustomers);
         } else {
           container.innerHTML = `<p class='text-xs text-red-400 text-center py-4'>${data.error || 'Yetkisiz İşlem!'}</p>`;
@@ -723,7 +727,6 @@
         btnRedeem.className = "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg";
       }
 
-      // Yönetici Değilse Butonları Gizle
       if (isStaffAdmin) {
         document.getElementById("adminActionButtons").classList.remove("hidden");
         document.getElementById("adminEditDeleteButtons").classList.remove("hidden");
