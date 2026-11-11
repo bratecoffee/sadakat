@@ -155,7 +155,7 @@
           </button>
         </div>
 
-        <!-- 1. Hızlı Damga Onay Bölümü (Tüm Personel) -->
+        <!-- 1. Hızlı Damga Onay Bölümü -->
         <div id="adminSectionApprove" class="space-y-4">
           <div id="approvalForm">
             <form onsubmit="handleFastVerifySubmit(event)">
@@ -191,7 +191,7 @@
           </div>
         </div>
 
-        <!-- 2. Müşteri Listesi Bölümü (Sadece Yönetici) -->
+        <!-- 2. Müşteri Listesi Bölümü -->
         <div id="adminSectionList" class="hidden space-y-3">
           <div class="flex gap-2">
             <input type="text" id="adminSearchInput" oninput="filterAdminCustomerList()" placeholder="Müşteri Ara (İsim / Tel)..." class="flex-1 bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
@@ -205,7 +205,7 @@
     </div>
   </div>
 
-  <!-- Yönetici İçin Müşteri Kart Detay & Düzenleme Modalı -->
+  <!-- Müşteri Kart Detay & İşlem Modalı -->
   <div id="customerDetailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-stone-900 border border-stone-800 w-full max-w-sm rounded-3xl p-5 relative shadow-2xl">
       <button onclick="closeCustomerDetailModal()" class="absolute top-3 right-3 text-stone-400 hover:text-white">
@@ -231,8 +231,8 @@
         </div>
       </div>
 
-      <!-- TEK TIKLA DAMGA EKLE / SİL BUTONLARI -->
-      <div class="grid grid-cols-2 gap-2 mt-2">
+      <!-- TEK TIKLA DAMGA EKLE / SİL -->
+      <div id="adminActionButtons" class="grid grid-cols-2 gap-2 mt-2">
         <button onclick="toggleStampAdmin('ADD')" class="bg-emerald-800 hover:bg-emerald-700 text-emerald-100 font-bold py-2.5 rounded-xl text-xs border border-emerald-600 transition">
           +1 Damga Ekle ☕
         </button>
@@ -241,15 +241,15 @@
         </button>
       </div>
 
-      <!-- Hediye Kahve Düşme Butonu -->
+      <!-- Hediye Kahve Düşme -->
       <div id="modalRewardActionContainer" class="mt-2">
         <button id="btnRedeemReward" onclick="redeemCustomerReward()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg">
           <i class="fa-solid fa-gift text-sm"></i> 1 Hediye Kahve Kullan (Düş)
         </button>
       </div>
 
-      <!-- Düzenle & Sil Butonları -->
-      <div class="grid grid-cols-2 gap-2 mt-2">
+      <!-- Düzenle & Sil -->
+      <div id="adminEditDeleteButtons" class="grid grid-cols-2 gap-2 mt-2">
         <button onclick="openEditCustomerSubModal()" class="bg-blue-900/80 hover:bg-blue-800 text-blue-200 font-bold py-2 rounded-xl text-xs border border-blue-700 transition">
           ✏️ Bilgileri Düzenle
         </button>
@@ -266,7 +266,7 @@
     </div>
   </div>
 
-  <!-- YÖNETİCİ MÜŞTERİ BİLGİLERİNİ DÜZENLEME MODALI -->
+  <!-- YÖNETİCİ DÜZENLEME MODALI -->
   <div id="editCustomerSubModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-[60]">
     <div class="bg-stone-900 border border-stone-800 w-full max-w-sm rounded-3xl p-5 relative shadow-2xl space-y-3">
       <button onclick="closeEditCustomerSubModal()" class="absolute top-3 right-3 text-stone-400 hover:text-white">
@@ -313,7 +313,6 @@
     let selectedModalCustomer = null;
     let allAdminCustomers = [];
     
-    // 1 Dakikalık Otomatik Yönetici Çıkış Sayacı
     let adminInactivityTimer = null;
     const ADMIN_TIMEOUT_MS = 60000;
 
@@ -417,7 +416,7 @@
           localStorage.setItem("brate_user", JSON.stringify(currentUser));
           renderDashboard();
         } else {
-          alert("Hata: " + data.error);
+          alert("Hata: " + (data.error || "İşlem başarısız"));
         }
       } catch (err) {
         alert("Bağlantı hatası!");
@@ -534,7 +533,6 @@
       location.reload();
     }
 
-    // Kasiyer Paneli Fonksiyonları
     function openBaristaModal() {
       document.getElementById("baristaModal").classList.remove("hidden");
       document.getElementById("baristaModal").classList.add("flex");
@@ -576,7 +574,7 @@
         if (data.success) {
           baristaPin = pin;
           activeStaffName = data.staff.name;
-          isStaffAdmin = data.staff.is_admin === 1;
+          isStaffAdmin = Number(data.staff.is_admin) === 1;
 
           document.getElementById("activeStaffName").innerText = `${activeStaffName} ${isStaffAdmin ? '(Yönetici)' : ''}`;
 
@@ -584,15 +582,13 @@
           document.getElementById("baristaPinStep").classList.add("hidden");
           document.getElementById("baristaActionStep").classList.remove("hidden");
           
-          // YETKİYE GÖRE TAB GÖSTERİMİ
           const adminTabNav = document.getElementById("adminTabNav");
           if (isStaffAdmin) {
             adminTabNav.classList.remove("hidden");
-            switchAdminTab('approve');
           } else {
             adminTabNav.classList.add("hidden");
-            switchAdminTab('approve');
           }
+          switchAdminTab('approve');
 
           setTimeout(() => {
             const codeInput = document.getElementById("baristaCodeInput");
@@ -602,7 +598,7 @@
             }
           }, 150);
         } else {
-          alert("Hatalı Personel PIN!");
+          alert("Hata: " + (data.error || "Hatalı Personel PIN!"));
           const pinInput = document.getElementById("baristaPinInput");
           pinInput.focus();
           pinInput.select();
@@ -628,7 +624,7 @@
         secList.classList.add("hidden");
         setTimeout(() => document.getElementById("baristaCodeInput").focus(), 100);
       } else {
-        if (!isStaffAdmin) return; // Normal personel müşteri listesine erişemez
+        if (!isStaffAdmin) return;
         btnList.className = "flex-1 py-2 text-xs font-bold rounded-xl bg-amber-600 text-stone-950";
         btnApprove.className = "flex-1 py-2 text-xs font-bold rounded-xl text-stone-400 hover:text-white";
         secList.classList.remove("hidden");
@@ -727,6 +723,15 @@
         btnRedeem.className = "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg";
       }
 
+      // Yönetici Değilse Butonları Gizle
+      if (isStaffAdmin) {
+        document.getElementById("adminActionButtons").classList.remove("hidden");
+        document.getElementById("adminEditDeleteButtons").classList.remove("hidden");
+      } else {
+        document.getElementById("adminActionButtons").classList.add("hidden");
+        document.getElementById("adminEditDeleteButtons").classList.add("hidden");
+      }
+
       const mGrid = document.getElementById("modalStampsGrid");
       mGrid.innerHTML = "";
       for (let i = 0; i < 8; i++) {
@@ -752,7 +757,7 @@
 
     async function toggleStampAdmin(action) {
       resetAdminInactivityTimer();
-      if (!selectedModalCustomer) return;
+      if (!selectedModalCustomer || !isStaffAdmin) return;
       
       const res = await fetch(`${API_BASE_URL}/api/admin/stamp/toggle`, {
         method: "POST",
@@ -765,6 +770,8 @@
         selectedModalCustomer = data.customer;
         showCustomerDetailModal(selectedModalCustomer);
         loadCustomerList();
+      } else {
+        alert("Hata: " + (data.error || "İşlem başarısız"));
       }
     }
 
@@ -788,7 +795,7 @@
           status.className = "text-xs text-center text-emerald-400 font-bold mt-2";
           selectedModalCustomer = data.customer;
           showCustomerDetailModal(selectedModalCustomer);
-          loadCustomerList();
+          if (isStaffAdmin) loadCustomerList();
 
           if (currentUser && currentUser.phone === selectedModalCustomer.phone) {
             currentUser = data.customer;
@@ -806,7 +813,7 @@
     }
 
     function openEditCustomerSubModal() {
-      if (!selectedModalCustomer) return;
+      if (!selectedModalCustomer || !isStaffAdmin) return;
       document.getElementById('editCustOldPhone').value = selectedModalCustomer.phone;
       document.getElementById('editCustName').value = selectedModalCustomer.name;
       document.getElementById('editCustPhone').value = selectedModalCustomer.phone;
@@ -845,7 +852,7 @@
     }
 
     async function deleteCustomerAdmin() {
-      if (!selectedModalCustomer) return;
+      if (!selectedModalCustomer || !isStaffAdmin) return;
       if (!confirm(`"${selectedModalCustomer.name}" isimli müşteriyi tamamen silmek istediğinize emin misiniz?`)) return;
 
       const res = await fetch(`${API_BASE_URL}/api/admin/customer/delete`, {
@@ -870,6 +877,7 @@
 
     async function toggleCustomerLimit(phone, allow_multiple) {
       resetAdminInactivityTimer();
+      if (!isStaffAdmin) return;
       try {
         const res = await fetch(`${API_BASE_URL}/api/admin/toggle-limit`, {
           method: "POST",
