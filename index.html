@@ -26,7 +26,7 @@
       </div>
     </div>
     <button onclick="openBaristaModal()" class="text-xs bg-white/10 hover:bg-white/20 text-amber-200 px-3 py-1.5 rounded-full border border-amber-500/30 transition">
-      <i class="fa-solid fa-user-shield mr-1"></i> Yönetici Girişi
+      <i class="fa-solid fa-user-shield mr-1"></i> Kasa / Yönetici Girişi
     </button>
   </header>
 
@@ -51,7 +51,7 @@
       <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
         <div id="nameField" class="hidden">
           <label class="block text-xs font-medium text-stone-300 mb-1">Adınız Soyadınız</label>
-          <input type="text" id="nameInput" placeholder="Örn: Şener Gülseven" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500">
+          <input type="text" id="nameInput" placeholder="Örn: Müşteri Adı" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500">
         </div>
 
         <div>
@@ -90,7 +90,7 @@
         </div>
       </div>
 
-      <!-- 30 Saniyelik Dinamik Rastgele Kod Ekranı -->
+      <!-- 30 Saniyelik Dinamik Kod Ekranı -->
       <div class="bg-stone-900 border border-stone-800 p-6 rounded-3xl text-center shadow-xl">
         <p class="text-xs text-stone-400 mb-1">Kasada Baristaya Söyleyeceğiniz Kod:</p>
         <div class="bg-stone-950 border border-amber-500/30 rounded-2xl py-3.5 my-2 flex items-center justify-center gap-2">
@@ -127,7 +127,7 @@
         <p class="text-xs text-stone-400 mb-4">Personel PIN kodunuzu girin:</p>
         
         <form onsubmit="handlePinSubmit(event)">
-          <input type="password" id="baristaPinInput" placeholder="PIN" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white text-center tracking-widest text-lg mb-4 focus:outline-none focus:border-amber-500">
+          <input type="password" id="baristaPinInput" placeholder="Personel PIN" class="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-white text-center tracking-widest text-lg mb-4 focus:outline-none focus:border-amber-500">
           <button type="submit" id="pinSubmitBtn" class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3 rounded-xl">Giriş Yap</button>
         </form>
       </div>
@@ -135,8 +135,8 @@
       <!-- Kasiyer Kod Onaylama & Müşteri Listesi Ekranı -->
       <div id="baristaActionStep" class="hidden space-y-4">
         
-        <div class="flex justify-between items-center bg-stone-950 px-4 py-2 rounded-xl border border-stone-800 text-xs">
-          <span class="text-stone-400">Aktif Personel:</span>
+        <div class="flex justify-between items-center bg-stone-950 px-4 py-2.5 rounded-xl border border-stone-800 text-xs">
+          <span class="text-stone-400 flex items-center gap-1.5"><i class="fa-solid fa-user-check text-emerald-400"></i> İşlem Yapan Kasiyer:</span>
           <span id="activeStaffName" class="text-amber-400 font-bold capitalize">...</span>
         </div>
 
@@ -171,7 +171,7 @@
           <div id="approvedInfo" class="hidden bg-brate-card border border-amber-500/40 p-5 rounded-3xl shadow-2xl flex-col gap-3">
             <div class="flex justify-between items-center border-b border-white/10 pb-2">
               <div>
-                <span class="text-[10px] text-emerald-400 uppercase font-bold tracking-widest">✓ Damga Onaylandı</span>
+                <span id="approvedByStaff" class="text-[10px] text-emerald-400 uppercase font-bold tracking-widest block">✓ Damga Onaylandı</span>
                 <h4 id="approvedCustomerName" class="text-lg font-bold text-white capitalize">...</h4>
               </div>
               <span id="approvedCustomerPhone" class="text-xs text-amber-300 font-mono">...</span>
@@ -657,7 +657,7 @@
         const data = await res.json();
 
         if (data.success) {
-          status.innerText = "1 Hediye Kahve Başarıyla Düşüldü! 🎁";
+          status.innerText = `1 Hediye Kahve Başarıyla Düşüldü! 🎁 (${activeStaffName})`;
           status.className = "text-xs text-center text-emerald-400 font-bold mt-2";
           showCustomerDetailModal(data.customer);
           loadCustomerList();
@@ -728,13 +728,15 @@
         const data = await res.json();
 
         if (data.success) {
-          status.innerText = `İşlem Başarılı (${data.staffName})! 🎉`;
+          const staffName = data.staffName || activeStaffName;
+          status.innerText = `İşlem Başarılı (${staffName})! 🎉`;
           status.className = "text-xs text-center text-emerald-400 font-bold";
 
           approvalForm.classList.add("hidden");
           approvedInfo.classList.remove("hidden");
           approvedInfo.classList.add("flex");
 
+          document.getElementById("approvedByStaff").innerText = `✓ ${staffName} Tarafından Onaylandı`;
           document.getElementById("approvedCustomerName").innerText = data.customer.name || "Müşteri";
           document.getElementById("approvedCustomerPhone").innerText = data.customer.phone;
 
