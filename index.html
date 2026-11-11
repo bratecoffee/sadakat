@@ -135,9 +135,16 @@
       <!-- Kasiyer Kod Onaylama & Müşteri Listesi Ekranı -->
       <div id="baristaActionStep" class="hidden space-y-4">
         
+        <!-- YENİ: Personel Bilgisi ve Çıkış / Değiştir Butonu -->
         <div class="flex justify-between items-center bg-stone-950 px-4 py-2.5 rounded-xl border border-stone-800 text-xs">
-          <span class="text-stone-400 flex items-center gap-1.5"><i class="fa-solid fa-user-check text-emerald-400"></i> İşlem Yapan Kasiyer:</span>
-          <span id="activeStaffName" class="text-amber-400 font-bold capitalize">...</span>
+          <div class="flex items-center gap-1.5">
+            <i class="fa-solid fa-user-check text-emerald-400"></i>
+            <span class="text-stone-400">Kasiyer:</span>
+            <span id="activeStaffName" class="text-amber-400 font-bold capitalize">...</span>
+          </div>
+          <button onclick="logoutStaff()" class="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition flex items-center gap-1">
+            <i class="fa-solid fa-right-from-bracket"></i> Çıkış Yap
+          </button>
         </div>
 
         <div class="flex bg-stone-950 p-1 rounded-2xl border border-stone-800">
@@ -279,20 +286,28 @@
 
     function autoLogoutAdmin() {
       if (baristaPin) {
-        baristaPin = "";
-        activeStaffName = "";
-        if (adminInactivityTimer) clearTimeout(adminInactivityTimer);
-        
-        closeCustomerDetailModal();
-        closeBaristaModal();
-        
-        document.getElementById("baristaPinStep").classList.remove("hidden");
-        document.getElementById("baristaActionStep").classList.add("hidden");
-        document.getElementById("baristaPinInput").value = "";
-        resetBaristaForm();
-        
+        logoutStaff();
         alert("1 dakika boyunca işlem yapılmadığı için Kasa Yönetici Paneli güvenlik nedeniyle kapatıldı.");
       }
+    }
+
+    // YENİ: Personel Çıkış Yap / Değiştir Fonksiyonu
+    function logoutStaff() {
+      baristaPin = "";
+      activeStaffName = "";
+      if (adminInactivityTimer) clearTimeout(adminInactivityTimer);
+      
+      closeCustomerDetailModal();
+      
+      document.getElementById("baristaPinStep").classList.remove("hidden");
+      document.getElementById("baristaActionStep").classList.add("hidden");
+      document.getElementById("baristaPinInput").value = "";
+      resetBaristaForm();
+      
+      setTimeout(() => {
+        const pinInput = document.getElementById("baristaPinInput");
+        if (pinInput) pinInput.focus();
+      }, 100);
     }
 
     function switchTab(tab) {
@@ -469,7 +484,7 @@
       
       setTimeout(() => {
         const pinInput = document.getElementById("baristaPinInput");
-        if (pinInput) {
+        if (pinInput && !baristaPin) {
           pinInput.focus();
           pinInput.select();
         }
