@@ -121,7 +121,7 @@
         <i class="fa-solid fa-xmark text-xl"></i>
       </button>
 
-      <!-- PIN Girişi (Kişisel Personel PIN) -->
+      <!-- PIN Girişi -->
       <div id="baristaPinStep">
         <h3 class="text-lg font-bold text-amber-400 mb-1">Kasa Yönetici Paneli</h3>
         <p class="text-xs text-stone-400 mb-4">Personel PIN kodunuzu girin:</p>
@@ -132,14 +132,13 @@
         </form>
       </div>
 
-      <!-- Kasiyer Kod Onaylama & Müşteri Listesi Ekranı -->
+      <!-- Kasiyer / Yönetici Ekranı -->
       <div id="baristaActionStep" class="hidden space-y-4">
         
-        <!-- YENİ: Personel Bilgisi ve Çıkış / Değiştir Butonu -->
         <div class="flex justify-between items-center bg-stone-950 px-4 py-2.5 rounded-xl border border-stone-800 text-xs">
           <div class="flex items-center gap-1.5">
             <i class="fa-solid fa-user-check text-emerald-400"></i>
-            <span class="text-stone-400">Kasiyer:</span>
+            <span class="text-stone-400">Giriş Yapan:</span>
             <span id="activeStaffName" class="text-amber-400 font-bold capitalize">...</span>
           </div>
           <button onclick="logoutStaff()" class="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition flex items-center gap-1">
@@ -147,7 +146,7 @@
           </button>
         </div>
 
-        <div class="flex bg-stone-950 p-1 rounded-2xl border border-stone-800">
+        <div id="adminTabNav" class="flex bg-stone-950 p-1 rounded-2xl border border-stone-800">
           <button id="adminTabApprove" onclick="switchAdminTab('approve')" class="flex-1 py-2 text-xs font-bold rounded-xl bg-amber-600 text-stone-950">
             Hızlı Damga Onayla
           </button>
@@ -156,9 +155,8 @@
           </button>
         </div>
 
-        <!-- 1. Hızlı Damga Onay Bölümü -->
+        <!-- 1. Hızlı Damga Onay Bölümü (Tüm Personel) -->
         <div id="adminSectionApprove" class="space-y-4">
-          
           <div id="approvalForm">
             <form onsubmit="handleFastVerifySubmit(event)">
               <div>
@@ -174,7 +172,6 @@
 
           <p id="baristaStatus" class="text-xs text-center min-h-[1.25rem] font-bold"></p>
 
-          <!-- Onaylanan Müşterinin Dijital Kart Önizlemesi -->
           <div id="approvedInfo" class="hidden bg-brate-card border border-amber-500/40 p-5 rounded-3xl shadow-2xl flex-col gap-3">
             <div class="flex justify-between items-center border-b border-white/10 pb-2">
               <div>
@@ -192,12 +189,14 @@
               </button>
             </div>
           </div>
-
         </div>
 
-        <!-- 2. Müşteri Listesi -->
+        <!-- 2. Müşteri Listesi Bölümü (Sadece Yönetici) -->
         <div id="adminSectionList" class="hidden space-y-3">
-          <p class="text-xs text-stone-400 text-center">Detaylı kart veya hediye kullanımı için isme tıklayın:</p>
+          <div class="flex gap-2">
+            <input type="text" id="adminSearchInput" oninput="filterAdminCustomerList()" placeholder="Müşteri Ara (İsim / Tel)..." class="flex-1 bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+          </div>
+          <p class="text-[11px] text-stone-400 text-center">Düzenleme, silme ve hediye kullanımı için karta tıklayın:</p>
           <div id="customerListContainer" class="max-h-60 overflow-y-auto space-y-2 pr-1"></div>
         </div>
 
@@ -206,7 +205,7 @@
     </div>
   </div>
 
-  <!-- Yönetici İçin Seçilen Müşterinin Kart Detay & Hediye Kullanım Modalı -->
+  <!-- Yönetici İçin Müşteri Kart Detay & Düzenleme Modalı -->
   <div id="customerDetailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-stone-900 border border-stone-800 w-full max-w-sm rounded-3xl p-5 relative shadow-2xl">
       <button onclick="closeCustomerDetailModal()" class="absolute top-3 right-3 text-stone-400 hover:text-white">
@@ -232,10 +231,30 @@
         </div>
       </div>
 
+      <!-- TEK TIKLA DAMGA EKLE / SİL BUTONLARI -->
+      <div class="grid grid-cols-2 gap-2 mt-2">
+        <button onclick="toggleStampAdmin('ADD')" class="bg-emerald-800 hover:bg-emerald-700 text-emerald-100 font-bold py-2.5 rounded-xl text-xs border border-emerald-600 transition">
+          +1 Damga Ekle ☕
+        </button>
+        <button onclick="toggleStampAdmin('REMOVE')" class="bg-amber-800 hover:bg-amber-700 text-amber-100 font-bold py-2.5 rounded-xl text-xs border border-amber-600 transition">
+          -1 Damga Sil ❌
+        </button>
+      </div>
+
       <!-- Hediye Kahve Düşme Butonu -->
-      <div id="modalRewardActionContainer" class="mt-3">
-        <button id="btnRedeemReward" onclick="redeemCustomerReward()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg">
+      <div id="modalRewardActionContainer" class="mt-2">
+        <button id="btnRedeemReward" onclick="redeemCustomerReward()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg">
           <i class="fa-solid fa-gift text-sm"></i> 1 Hediye Kahve Kullan (Düş)
+        </button>
+      </div>
+
+      <!-- Düzenle & Sil Butonları -->
+      <div class="grid grid-cols-2 gap-2 mt-2">
+        <button onclick="openEditCustomerSubModal()" class="bg-blue-900/80 hover:bg-blue-800 text-blue-200 font-bold py-2 rounded-xl text-xs border border-blue-700 transition">
+          ✏️ Bilgileri Düzenle
+        </button>
+        <button onclick="deleteCustomerAdmin()" class="bg-rose-950 hover:bg-rose-900 text-rose-200 font-bold py-2 rounded-xl text-xs border border-rose-800 transition">
+          🗑️ Müşteriyi Sil
         </button>
       </div>
 
@@ -247,6 +266,41 @@
     </div>
   </div>
 
+  <!-- YÖNETİCİ MÜŞTERİ BİLGİLERİNİ DÜZENLEME MODALI -->
+  <div id="editCustomerSubModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-[60]">
+    <div class="bg-stone-900 border border-stone-800 w-full max-w-sm rounded-3xl p-5 relative shadow-2xl space-y-3">
+      <button onclick="closeEditCustomerSubModal()" class="absolute top-3 right-3 text-stone-400 hover:text-white">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <h3 class="text-base font-bold text-amber-400">✏️ Müşteri Bilgilerini Düzenle</h3>
+      
+      <input type="hidden" id="editCustOldPhone">
+      <div class="space-y-3 text-xs text-left">
+        <div>
+          <label class="block text-stone-400 mb-1">Ad Soyad:</label>
+          <input type="text" id="editCustName" class="w-full bg-stone-950 border border-stone-800 rounded-xl p-2.5 text-white">
+        </div>
+        <div>
+          <label class="block text-stone-400 mb-1">Telefon No:</label>
+          <input type="tel" id="editCustPhone" class="w-full bg-stone-950 border border-stone-800 rounded-xl p-2.5 text-white">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-amber-400 mb-1 font-bold">Damga Sayısı:</label>
+            <input type="number" id="editCustStamps" class="w-full bg-stone-950 border border-amber-600/50 rounded-xl p-2.5 text-amber-400 font-bold">
+          </div>
+          <div>
+            <label class="block text-emerald-400 mb-1 font-bold">Hediye Kahve:</label>
+            <input type="number" id="editCustRewards" class="w-full bg-stone-950 border border-emerald-600/50 rounded-xl p-2.5 text-emerald-400 font-bold">
+          </div>
+        </div>
+      </div>
+
+      <button onclick="saveCustomerEdit()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs transition">Kaydet ve Güncelle</button>
+    </div>
+  </div>
+
   <script>
     const API_BASE_URL = "https://sadakat-api.bratecoffee35.workers.dev";
     let currentUser = null;
@@ -255,7 +309,9 @@
     let activeTab = "login";
     let baristaPin = "";
     let activeStaffName = "";
-    let selectedModalPhone = "";
+    let isStaffAdmin = false;
+    let selectedModalCustomer = null;
+    let allAdminCustomers = [];
     
     // 1 Dakikalık Otomatik Yönetici Çıkış Sayacı
     let adminInactivityTimer = null;
@@ -291,13 +347,14 @@
       }
     }
 
-    // YENİ: Personel Çıkış Yap / Değiştir Fonksiyonu
     function logoutStaff() {
       baristaPin = "";
       activeStaffName = "";
+      isStaffAdmin = false;
       if (adminInactivityTimer) clearTimeout(adminInactivityTimer);
       
       closeCustomerDetailModal();
+      closeEditCustomerSubModal();
       
       document.getElementById("baristaPinStep").classList.remove("hidden");
       document.getElementById("baristaActionStep").classList.add("hidden");
@@ -519,12 +576,24 @@
         if (data.success) {
           baristaPin = pin;
           activeStaffName = data.staff.name;
-          document.getElementById("activeStaffName").innerText = activeStaffName;
+          isStaffAdmin = data.staff.is_admin === 1;
+
+          document.getElementById("activeStaffName").innerText = `${activeStaffName} ${isStaffAdmin ? '(Yönetici)' : ''}`;
 
           resetAdminInactivityTimer();
           document.getElementById("baristaPinStep").classList.add("hidden");
           document.getElementById("baristaActionStep").classList.remove("hidden");
           
+          // YETKİYE GÖRE TAB GÖSTERİMİ
+          const adminTabNav = document.getElementById("adminTabNav");
+          if (isStaffAdmin) {
+            adminTabNav.classList.remove("hidden");
+            switchAdminTab('approve');
+          } else {
+            adminTabNav.classList.add("hidden");
+            switchAdminTab('approve');
+          }
+
           setTimeout(() => {
             const codeInput = document.getElementById("baristaCodeInput");
             if (codeInput) {
@@ -559,6 +628,7 @@
         secList.classList.add("hidden");
         setTimeout(() => document.getElementById("baristaCodeInput").focus(), 100);
       } else {
+        if (!isStaffAdmin) return; // Normal personel müşteri listesine erişemez
         btnList.className = "flex-1 py-2 text-xs font-bold rounded-xl bg-amber-600 text-stone-950";
         btnApprove.className = "flex-1 py-2 text-xs font-bold rounded-xl text-stone-400 hover:text-white";
         secList.classList.remove("hidden");
@@ -581,45 +651,68 @@
         const data = await res.json();
 
         if (data.success) {
-          container.innerHTML = "";
-          data.customers.forEach(c => {
-            const item = document.createElement("div");
-            item.className = "bg-stone-950 border border-stone-800 p-3 rounded-2xl flex justify-between items-center transition hover:border-amber-500/40 cursor-pointer";
-            
-            item.onclick = (e) => {
-              if (e.target.tagName !== 'BUTTON') {
-                showCustomerDetailModal(c);
-              }
-            };
-
-            item.innerHTML = `
-              <div>
-                <p class="text-xs font-bold text-white capitalize hover:text-amber-400 flex items-center gap-1.5">
-                  <i class="fa-solid fa-address-card text-amber-500/70 text-[11px]"></i>
-                  ${c.name || 'Müşteri'}
-                </p>
-                <p class="text-[10px] text-stone-400 font-mono mt-0.5">${c.phone} | Damga: ${c.stamps}/7 | Hediye: ${c.rewards}</p>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="text-[10px] ${c.allow_multiple ? 'text-amber-400 font-bold' : 'text-stone-500'}">
-                  ${c.allow_multiple ? 'Çoklu' : 'Tek'}
-                </span>
-                <button onclick="toggleCustomerLimit('${c.phone}', ${c.allow_multiple ? 0 : 1})" class="text-xs px-2.5 py-1 rounded-lg border ${c.allow_multiple ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-stone-800 text-stone-400 border-stone-700'}">
-                  ${c.allow_multiple ? 'Sınırı Aç' : 'Sınırsız Yap'}
-                </button>
-              </div>
-            `;
-            container.appendChild(item);
-          });
+          allAdminCustomers = data.customers || [];
+          renderAdminCustomers(allAdminCustomers);
+        } else {
+          container.innerHTML = `<p class='text-xs text-red-400 text-center py-4'>${data.error || 'Yetkisiz İşlem!'}</p>`;
         }
       } catch (err) {
         container.innerHTML = "<p class='text-xs text-red-400 text-center py-4'>Liste yüklenemedi!</p>";
       }
     }
 
+    function renderAdminCustomers(customers) {
+      const container = document.getElementById("customerListContainer");
+      container.innerHTML = "";
+
+      if (customers.length === 0) {
+        container.innerHTML = `<p class="text-xs text-stone-500 text-center py-4">Kayıtlı müşteri bulunamadı.</p>`;
+        return;
+      }
+
+      customers.forEach(c => {
+        const item = document.createElement("div");
+        item.className = "bg-stone-950 border border-stone-800 p-3 rounded-2xl flex justify-between items-center transition hover:border-amber-500/40 cursor-pointer";
+        
+        item.onclick = (e) => {
+          if (e.target.tagName !== 'BUTTON') {
+            showCustomerDetailModal(c);
+          }
+        };
+
+        item.innerHTML = `
+          <div>
+            <p class="text-xs font-bold text-white capitalize hover:text-amber-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-address-card text-amber-500/70 text-[11px]"></i>
+              ${c.name || 'Müşteri'}
+            </p>
+            <p class="text-[10px] text-stone-400 font-mono mt-0.5">${c.phone} | Damga: ${c.stamps}/8 | Hediye: ${c.rewards}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] ${c.allow_multiple ? 'text-amber-400 font-bold' : 'text-stone-500'}">
+              ${c.allow_multiple ? 'Çoklu' : 'Tek'}
+            </span>
+            <button onclick="toggleCustomerLimit('${c.phone}', ${c.allow_multiple ? 0 : 1})" class="text-xs px-2.5 py-1 rounded-lg border ${c.allow_multiple ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-stone-800 text-stone-400 border-stone-700'}">
+              ${c.allow_multiple ? 'Sınırı Aç' : 'Sınırsız Yap'}
+            </button>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function filterAdminCustomerList() {
+      const query = document.getElementById("adminSearchInput").value.toLocaleLowerCase('tr-TR');
+      const filtered = allAdminCustomers.filter(c => 
+        (c.name || '').toLocaleLowerCase('tr-TR').includes(query) || 
+        (c.phone || '').includes(query)
+      );
+      renderAdminCustomers(filtered);
+    }
+
     function showCustomerDetailModal(c) {
       resetAdminInactivityTimer();
-      selectedModalPhone = c.phone;
+      selectedModalCustomer = c;
       document.getElementById("modalCustomerName").innerText = c.name || "Müşteri";
       document.getElementById("modalCustomerPhone").innerText = c.phone;
       document.getElementById("modalCustomerRewards").innerText = `Hediye Kahve: ${c.rewards}`;
@@ -628,10 +721,10 @@
       const btnRedeem = document.getElementById("btnRedeemReward");
       if (c.rewards <= 0) {
         btnRedeem.disabled = true;
-        btnRedeem.className = "w-full bg-stone-800 text-stone-500 cursor-not-allowed font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2";
+        btnRedeem.className = "w-full bg-stone-800 text-stone-500 cursor-not-allowed font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2";
       } else {
         btnRedeem.disabled = false;
-        btnRedeem.className = "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg";
+        btnRedeem.className = "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg";
       }
 
       const mGrid = document.getElementById("modalStampsGrid");
@@ -657,8 +750,27 @@
       document.getElementById("customerDetailModal").classList.add("flex");
     }
 
+    async function toggleStampAdmin(action) {
+      resetAdminInactivityTimer();
+      if (!selectedModalCustomer) return;
+      
+      const res = await fetch(`${API_BASE_URL}/api/admin/stamp/toggle`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: selectedModalCustomer.phone, action, pin: baristaPin })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        selectedModalCustomer = data.customer;
+        showCustomerDetailModal(selectedModalCustomer);
+        loadCustomerList();
+      }
+    }
+
     async function redeemCustomerReward() {
       resetAdminInactivityTimer();
+      if (!selectedModalCustomer) return;
       const status = document.getElementById("modalStatus");
       status.innerText = "İşlem yapılıyor...";
       status.className = "text-xs text-center text-amber-400 font-bold mt-2";
@@ -667,17 +779,18 @@
         const res = await fetch(`${API_BASE_URL}/api/admin/redeem-reward`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone: selectedModalPhone, pin: baristaPin })
+          body: JSON.stringify({ phone: selectedModalCustomer.phone, pin: baristaPin })
         });
         const data = await res.json();
 
         if (data.success) {
-          status.innerText = `1 Hediye Kahve Başarıyla Düşüldü! 🎁 (${activeStaffName})`;
+          status.innerText = `1 Hediye Kahve Başarıyla Düşüldü! 🎁`;
           status.className = "text-xs text-center text-emerald-400 font-bold mt-2";
-          showCustomerDetailModal(data.customer);
+          selectedModalCustomer = data.customer;
+          showCustomerDetailModal(selectedModalCustomer);
           loadCustomerList();
 
-          if (currentUser && currentUser.phone === selectedModalPhone) {
+          if (currentUser && currentUser.phone === selectedModalCustomer.phone) {
             currentUser = data.customer;
             localStorage.setItem("brate_user", JSON.stringify(currentUser));
             renderDashboard();
@@ -689,6 +802,64 @@
       } catch (err) {
         status.innerText = "Bağlantı Hatası!";
         status.className = "text-xs text-center text-red-400 font-bold mt-2";
+      }
+    }
+
+    function openEditCustomerSubModal() {
+      if (!selectedModalCustomer) return;
+      document.getElementById('editCustOldPhone').value = selectedModalCustomer.phone;
+      document.getElementById('editCustName').value = selectedModalCustomer.name;
+      document.getElementById('editCustPhone').value = selectedModalCustomer.phone;
+      document.getElementById('editCustStamps').value = selectedModalCustomer.stamps;
+      document.getElementById('editCustRewards').value = selectedModalCustomer.rewards;
+      document.getElementById('editCustomerSubModal').classList.remove('hidden');
+      document.getElementById('editCustomerSubModal').classList.add('flex');
+    }
+
+    function closeEditCustomerSubModal() {
+      document.getElementById('editCustomerSubModal').classList.add('hidden');
+      document.getElementById('editCustomerSubModal').classList.remove('flex');
+    }
+
+    async function saveCustomerEdit() {
+      const old_phone = document.getElementById('editCustOldPhone').value;
+      const name = document.getElementById('editCustName').value;
+      const phone = document.getElementById('editCustPhone').value;
+      const stamps = document.getElementById('editCustStamps').value;
+      const rewards = document.getElementById('editCustRewards').value;
+
+      const res = await fetch(`${API_BASE_URL}/api/admin/customer/update`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ old_phone, name, phone, stamps, rewards, pin: baristaPin })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        closeEditCustomerSubModal();
+        closeCustomerDetailModal();
+        loadCustomerList();
+      } else {
+        alert("Hata: " + data.error);
+      }
+    }
+
+    async function deleteCustomerAdmin() {
+      if (!selectedModalCustomer) return;
+      if (!confirm(`"${selectedModalCustomer.name}" isimli müşteriyi tamamen silmek istediğinize emin misiniz?`)) return;
+
+      const res = await fetch(`${API_BASE_URL}/api/admin/customer/delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: selectedModalCustomer.phone, pin: baristaPin })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        closeCustomerDetailModal();
+        loadCustomerList();
+      } else {
+        alert("Hata: " + data.error);
       }
     }
 
